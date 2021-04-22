@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Edit Employee Records{% endblock title %}
+
+{% block content %}
+<div class="col-md-12">
+    <h4>Employee Data Table - Create, Read, Update, Delete</h4>
+ <form method="POST" class="post-form" action="/update_emp/{{employee.id}}">
+   {% csrf_token %}
+  <div class="container">
+ <br>
+  <div class="form-group row">
+  <label class="col-sm-1 col-form-label"></label>
+  <div class="col-sm-4">
+  <h3>Update Details</h3>
+  </div>
+   </div>
+  <div class="form-group row">
+  <label class="col-sm-2 col-form-label">ID:</label>
+  <div class="col-sm-4">
+   <input type="text" class="form-control" name="id" id="id_id" required maxlength="20" value="{{ employee.id }}"/>
+  </div>
+   </div>
+   <div class="form-group row">
+  <label class="col-sm-2 col-form-label">First Name:</label>
+  <div class="col-sm-4">
+   <input type="text" class="form-control" name="firstname" id="id_firstname" required maxlength="32" value="{{ employee.firstname }}" />
+  </div>
+   </div>
+  <div class="form-group row">
+  <label class="col-sm-2 col-form-label">Last Name:</label>
+  <div class="col-sm-4">
+   <input type="text" class="form-control" name="lastname" id="id_lastname" required maxlength="32" value="{{ employee.lastname }}" />
+  </div>
+   </div>
+  <div class="form-group row">
+  <label class="col-sm-2 col-form-label">Type of Employment:</label>
+  <div class="col-sm-4">
+   <input type="text" class="form-control" name="type" id="id_type" required maxlength="15" value="{{ employee.type }}" />
+  </div>
+   </div>
+    <div class="form-group row">
+  <label class="col-sm-2 col-form-label">Capacity:</label>
+  <div class="col-sm-4">
+   <input type="number" step="0.1" class="form-control" name="capacity" id="id_capacity" required maxlength="20" value="{{ employee.capacity }}"/>
+  </div>
+   </div>
+    <div class="form-group row">
+  <label class="col-sm-2 col-form-label">Hiring Date:</label>
+  <div class="col-sm-4">
+   <input type="date" class="form-control" name="hiring_date" id="id_hiring_date" required maxlength="20" value="{{ employee.hiring_date }}"/>
+  </div>
+   </div>
+    <div class="form-group row">
+  <label class="col-sm-2 col-form-label">Expiration Date:</label>
+  <div class="col-sm-4">
+   <input type="date" class="form-control" name="expiration_date" id="id_expiration_date" required maxlength="20" value="{{ employee.expiration_date }}"/>
+  </div>
+   </div>
+  <div class="form-group row">
+  <label class="col-sm-1 col-form-label"></label>
+  <div class="col-sm-4">
+  <button type="submit" class="btn btn-success btn-lg">Update</button>
+  </div>
+   </div>
+  </div>
+ </form>
+</div>
+{% endblock content %}
