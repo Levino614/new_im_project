@@ -64,12 +64,12 @@ def timesheet(request):
                 if assignment.task.id == project.id and assignment.employee.id == employee.id:
                     employee_prj_hours.append(assignment.percentage)
                     employee_prj_hours_id.append(project.id)
-        employee_list_project = [employee]
+        employee_list_project = []
         for project in projects:
             if project.id in employee_prj_hours_id:
                 employee_list_project.append(employee_prj_hours[employee_prj_hours_id.index(project.id)])
             else:
-                employee_list_project.append(0)
+                employee_list_project.append('-')
 
         employee_tasks.append(employee_list_project)  # For Project end
 
@@ -86,7 +86,7 @@ def timesheet(request):
             if chair.id in employee_ch_hours_id:
                 employee_list_chair.append(employee_ch_hours[employee_ch_hours_id.index(chair.id)])
             else:
-                employee_list_chair.append(0)
+                employee_list_chair.append('-')
         employee_chairs_tasks.append(employee_list_chair)
 
     i = 0
@@ -111,7 +111,7 @@ def timesheet(request):
             if position.id in employee_pos_hours_id:
                 employee_list_position.append(employee_pos_hours[employee_pos_hours_id.index(position.id)])
             else:
-                employee_list_position.append(0)
+                employee_list_position.append('-')
         employee_positions_tasks.append(employee_list_position)
 
     ii = 0
