@@ -55,9 +55,10 @@ def timesheet(request):
     employee_tasks = []
     employee_chairs_tasks = []
     employee_positions_tasks = []
+    tasks_sum = []
 
     for employee in employees:  # For Project start
-        employee_prj_hours = []
+        employee_prj_hours = [] # create list for project hours
         employee_prj_hours_id = []
         for project in projects:
             for assignment in assignments:
@@ -122,13 +123,23 @@ def timesheet(request):
             jj = jj + 1
         ii = ii + 1  # end for positions
 
+    for project in projects:
+        sum = 0
+        for assignment in assignments:
+            if assignment.task.id == project.id:
+                sum = sum + assignment.percentage
+        tasks_sum.append(sum)
+
+    print(tasks_sum)
+
     context = {
         'employees': employees,
         'assignments': assignments,
         'projects': projects,
         'chairs': chairs,
         'positions': positions,
-        'employeetasks': employee_tasks
+        'employeetasks': employee_tasks,
+        'tasks_sum' : tasks_sum
     }
     return render(request, 'timesheet.html', context)
 
@@ -152,7 +163,7 @@ def add_new_proj(request):
         form = ProjectForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('/task')
+            return redirect('/tasks')
     else:
         form = ProjectForm()
     context = {
@@ -166,7 +177,7 @@ def add_new_pos(request):
         form = PositionForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('/task')
+            return redirect('/tasks')
     else:
         form = PositionForm()
     context = {
@@ -180,7 +191,7 @@ def add_new_chair(request):
         form = ChairForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('/task')
+            return redirect('/tasks')
     else:
         form = ChairForm()
     context = {
@@ -312,19 +323,19 @@ def delete_emp(request, id):
 def delete_proj(request, id):
     project = Project.objects.get(id=id)
     project.delete()
-    return redirect('/task')
+    return redirect('/tasks')
 
 
 def delete_pos(request, id):
     position = Position.objects.get(id=id)
     position.delete()
-    return redirect('/task')
+    return redirect('/tasks')
 
 
 def delete_chair(request, id):
     chair = Chair.objects.get(id=id)
     chair.delete()
-    return redirect('/task')
+    return redirect('/tasks')
 
 
 def delete_ass(request, id):

@@ -18,6 +18,7 @@
                     <td><a href="/employee" style="color: #000000">{{ employee }}</a></td>
                 </tr>
                 {% endfor %}
+                    <td>∑</td>
             </tbody>
         </table>
     </div>
@@ -45,6 +46,10 @@
                 {% endfor %}
                 </tr>
              {% endfor %}
+
+            {% for task_sum in tasks_sum %}
+                <td><a href="/assignments" style="color: #000000">{{ task_sum }}</a></td>
+            {% endfor %}
             </tbody>
         </table>
     </div>
