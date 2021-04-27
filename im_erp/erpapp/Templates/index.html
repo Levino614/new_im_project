@@ -1,4 +1,132 @@
 {% extends "base.html" %}
-{% block title %}SmartRnD{% endblock title %}
+{% block title %}SmartRnD - Overview{% endblock title %}
 {% block content %}
+<!-- Main Content -->
+<div class="col-8">
+    <!-- Employee Datatable -->
+    <div class="row">
+        <div class="table-responsive">
+
+            <h4>Employee</h4>
+        <table id="emlployeedatatable" class="table table-striped table-bordered" width="100%">
+            <thead>
+                <th class="col-sm-1">ID</th>
+                <th class="col-sm-2">First Name</th>
+                <th class="col-sm-2">Last Name</th>
+                <th class="col-sm-2">Type of Employment</th>
+                <th class="col-sm-1">Max. Capacity</th>
+                <th class="col-sm-2">Hiring Date</th>
+                <th class="col-sm-2">Expiration Date</th>
+            </thead>
+            <tbody>
+            {% for employee in employees %}
+                <tr>
+                     <td>{{ employee.id }}</td>
+                     <td>{{ employee.firstname }}</td>
+                     <td>{{ employee.lastname }}</td>
+                     <td>{{ employee.type }}</td>
+                     <td>{{ employee.capacity }}</td>
+                     <td>{{ employee.hiring_date }}</td>
+                     <td>{{ employee.expiration_date }}</td>
+                </tr>
+               {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row">
+    <!-- Task Datatables -->
+        <div class="table-responsive">
+            <!-- Project Datatable -->
+            <h4>Project</h4>
+            <table id="projectsdatatable" class="table table-striped table-bordered" width="100%">
+                <thead>
+                    <tr>
+                        <th class="col-sm-1">ID</th>
+                        <th class="col-sm-3">Title</th>
+                        <th class="col-sm-4">Description</th>
+                        <th class="col-sm-1">Start Date</th>
+                        <th class="col-sm-1">Duration (in months)</th>
+                        <th class="col-sm-1">End Date</th>
+                        <th class="col-sm-1">Ressources</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for project in projects %}
+                    <tr>
+                        <td>{{ project.id }}</td>
+                        <td>{{ project.title }}</td>
+                        <td>{{ project.description }}</td>
+                        <td>{{ project.begin }}</td>
+                        <td>{{ project.duration }}</td>
+                        <td>{{ project.end }}</td>
+                        <td>{{ project.ressources }}</td>
+                         </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <!-- Position Datatable -->
+            <h4>Position</h4>
+            <table id="positionsdatatable" class="table table-striped table-bordered" width="100%">
+                <thead>
+                    <th class="col-sm-1">ID</th>
+                    <th class="col-sm-3">Title</th>
+                    <th class="col-sm-7">Description</th>
+                    <th class="col-sm-1">Ressources</th>
+                </thead>
+                <tbody>
+                {% for position in positions %}
+                    <tr>
+                        <td>{{ position.id }}</td>
+                        <td>{{ position.title }}</td>
+                        <td>{{ position.description }}</td>
+                        <td>{{ position.ressources }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <!-- Chair Datatable -->
+            <h4>Chair</h4>
+            <table id="chairsdatatable" class="table table-striped table-bordered" width="100%">
+                <thead>
+                    <th class="col-sm-1">ID</th>
+                    <th class="col-sm-3">Title</th>
+                    <th class="col-sm-6">Description</th>
+                    <th class="col-sm-1">Rotation</th>
+                    <th class="col-sm-1">Requirements</th>
+                </thead>
+                <tbody>
+                {% for chair in chairs %}
+                    <tr>
+                        <td>{{ chair.id }}</td>
+                        <td>{{ chair.title }}</td>
+                        <td>{{ chair.description }}</td>
+                        <td>{{ chair.rotation }}</td>
+                        <td>{{ chair.requirement }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!-- Spacing -->
+<div class="col-1">
+
+</div>
+<!-- Sidebar -->
+<div class="col-3">
+    <div class="row">
+        <h4>Action Recommendation(s):</h4>
+        <p>-</p>
+        <p>-</p>
+        <p>-</p>
+    </div>
+    <div class="row">
+        <h4>Critical:</h4>
+        <p>-</p>
+        <p>-</p>
+        <p>-</p>
+    </div>
+</div>
 {% endblock content %}

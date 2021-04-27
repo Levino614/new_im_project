@@ -1,4 +1,3 @@
-from datetime import timedelta
 from django.db import models
 
 
@@ -7,8 +6,8 @@ class Employee(models.Model):
     firstname = models.CharField('First Name', max_length=32)
     lastname = models.CharField('Last Name', max_length=32)
     type_choices = [
-        ('UA', 'Undergraduate Assistant'),
-        ('RA', 'Research Assistant')
+        ('Undergraduate Assistant', 'Undergraduate Assistant'),
+        ('Research Assistant', 'Research Assistant')
     ]
     type = models.CharField('Type of Employment', choices=type_choices, max_length=32)
     capacity = models.FloatField('Capacity', default=1.0)
@@ -27,42 +26,55 @@ class Employee(models.Model):
 
 
 class Task(models.Model):
-    name = models.CharField('Titel', max_length=50)
-    description = models.CharField('Beschreibung', max_length=2400)
+    title = models.CharField('Title', max_length=50, default='Task Title')
+    description = models.CharField('description', max_length=2400)
+    assigned_employees = models.ManyToManyField(Employee, through='Assignment')
 
     def __str__(self):
-        return self.name
+        return self.title
+
+    class Meta:
+        db_table = "task"
 
 
 class Project(Task):
     ressources = models.FloatField('Ressources')
     begin = models.DateField('Project Start')
-    duration = models.DurationField('Duration')
+    duration = models.FloatField('Duration (in months)')
     end = models.DateField('Project End')
 
     def __str__(self):
-        return self.name
+        return self.title
+
+    class Meta:
+        db_table = "project"
 
 
 class Position(Task):
     ressources = models.FloatField('Ressources')
 
     def __str__(self):
-        return self.name
+        return self.title
+
+    class Meta:
+        db_table = "position"
 
 
 class Chair(Task):
     rotation_choices = [
-        ('ST', 'Sommer Term'),
-        ('WT', 'Winter Term'),
-        ('ET', 'Every Term'),
-        ('irreg', 'irregular')
+        ('Summer Term', 'Summer Term'),
+        ('Winter Term', 'Winter Term'),
+        ('Every Term', 'Every Term'),
+        ('Irregular', 'irregular')
     ]
     rotation = models.CharField('Term', default='Every Term', choices=rotation_choices, max_length=16)
     requirement = models.FloatField('Requirement', default=1)
 
     def __str__(self):
-        return self.name
+        return self.title
+
+    class Meta:
+        db_table = "chair"
 
 
 class Assignment(models.Model):
@@ -75,3 +87,6 @@ class Assignment(models.Model):
 
     def __str__(self):
         return '{} --({})-> {}'.format(self.employee, self.percentage, self.task)
+
+    class Meta:
+        db_table = "assignment"
