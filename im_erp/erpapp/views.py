@@ -9,11 +9,26 @@ def index(request):
     projects = Project.objects.all()
     positions = Position.objects.all()
     chairs = Chair.objects.all()
+    assignments = Assignment.objects.all()
+
+    tasks_sum = []
+    for project in projects:
+        sum = 0
+        ressources = project.ressources
+        title = project.title
+        for assignment in assignments:
+            if assignment.task.id == project.id:
+                sum += assignment.percentage
+        diff = round((sum - ressources), 2)
+
+        tasks_sum.append((sum, ressources, title, diff))
+
     context = {
         'employees': employees,
         'projects': projects,
         'positions': positions,
-        'chairs': chairs
+        'chairs': chairs,
+        'tasks_sum': tasks_sum
     }
     return render(request, 'index.html', context)
 
@@ -63,7 +78,7 @@ def timesheet(request):
         for project in projects:
             for assignment in assignments:
                 if assignment.task.id == project.id and assignment.employee.id == employee.id:
-                    employee_prj_hours.append(tuple((assignment.percentage, assignment.id, assignment.responsibility)))
+                    employee_prj_hours.append((assignment.percentage, assignment.id, assignment.responsibility))
                     employee_prj_hours_id.append(project.id)
         employee_list_project = []
         for project in projects:
@@ -80,7 +95,7 @@ def timesheet(request):
         for chair in chairs:
             for assignment in assignments:
                 if assignment.task.id == chair.id and assignment.employee.id == employee.id:
-                    employee_ch_hours.append(tuple((assignment.percentage, assignment.id, assignment.responsibility)))
+                    employee_ch_hours.append((assignment.percentage, assignment.id, assignment.responsibility))
                     employee_ch_hours_id.append(chair.id)
         employee_list_chair = []
         for chair in chairs:
@@ -105,7 +120,7 @@ def timesheet(request):
         for position in positions:
             for assignment in assignments:
                 if assignment.task.id == position.id and assignment.employee.id == employee.id:
-                    employee_pos_hours.append(tuple((assignment.percentage, assignment.id, assignment.responsibility)))
+                    employee_pos_hours.append((assignment.percentage, assignment.id, assignment.responsibility))
                     employee_pos_hours_id.append(position.id)
         employee_list_position = []
         for position in positions:
@@ -269,7 +284,7 @@ def update_proj(request, id):
     form = ProjectForm(request.POST, instance=project)
     if form.is_valid():
         form.save()
-        return redirect('/task')
+        return redirect('/tasks')
     context = {
         'project': project
     }
@@ -281,7 +296,7 @@ def update_pos(request, id):
     form = PositionForm(request.POST, instance=position)
     if form.is_valid():
         form.save()
-        return redirect('/task')
+        return redirect('/tasks')
     context = {
         'position': position
     }
@@ -293,7 +308,7 @@ def update_chair(request, id):
     form = ChairForm(request.POST, instance=chair)
     if form.is_valid():
         form.save()
-        return redirect('/task')
+        return redirect('/tasks')
     context = {
         'chair': chair
     }

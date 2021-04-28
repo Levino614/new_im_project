@@ -117,16 +117,20 @@
 <!-- Sidebar -->
 <div class="col-3">
     <div class="row">
-        <h4>Action Recommendation(s):</h4>
-        <p>-</p>
-        <p>-</p>
-        <p>-</p>
+        <h4>Warning(s):</h4>
+        {% for task_sum in tasks_sum %}
+            {% if task_sum.0 > task_sum.1 %}
+                <div class="alert alert-warning" role="alert">
+                    {{ task_sum.2 }} is currently using too many ressources ({{ task_sum.3 }})!
+                </div>
+            {% endif %}
+        {% endfor %}
     </div>
     <div class="row">
-        <h4>Critical:</h4>
-        <p>-</p>
-        <p>-</p>
-        <p>-</p>
+        <h4>Recommendation(s):</h4>
+        <div class="alert alert-primary" role="alert">
+            A simple recommendation!
+        </div>
     </div>
 </div>
 {% endblock content %}
