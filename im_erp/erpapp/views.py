@@ -58,7 +58,7 @@ def timesheet(request):
     tasks_sum = []
 
     for employee in employees:  # For Project start
-        employee_prj_hours = [] # create list for project hours
+        employee_prj_hours = []  # create list for project hours
         employee_prj_hours_id = []
         for project in projects:
             for assignment in assignments:
@@ -70,7 +70,7 @@ def timesheet(request):
             if project.id in employee_prj_hours_id:
                 employee_list_project.append(employee_prj_hours[employee_prj_hours_id.index(project.id)])
             else:
-                employee_list_project.append(tuple(("-", 0, 0)))
+                employee_list_project.append('-')
 
         employee_tasks.append(employee_list_project)  # For Project end
 
@@ -87,7 +87,7 @@ def timesheet(request):
             if chair.id in employee_ch_hours_id:
                 employee_list_chair.append(employee_ch_hours[employee_ch_hours_id.index(chair.id)])
             else:
-                employee_list_chair.append(tuple(('-', 0, 0)))
+                employee_list_chair.append('-')
         employee_chairs_tasks.append(employee_list_chair)
 
     i = 0
@@ -112,7 +112,7 @@ def timesheet(request):
             if position.id in employee_pos_hours_id:
                 employee_list_position.append(employee_pos_hours[employee_pos_hours_id.index(position.id)])
             else:
-                employee_list_position.append(tuple(('-', 0, 0)))
+                employee_list_position.append('-')
         employee_positions_tasks.append(employee_list_position)
 
     ii = 0
@@ -130,13 +130,6 @@ def timesheet(request):
                 sum = sum + assignment.percentage
         tasks_sum.append(sum)
 
-    print("sum :" + str(tasks_sum))
-
-    print("employee tasks: " + str(employee_tasks))
-
-    list = [(1, 2), (4, 7), (12, 13)]
-    print("Liste : " + str(list[0]))
-
     context = {
         'employees': employees,
         'assignments': assignments,
@@ -144,7 +137,7 @@ def timesheet(request):
         'chairs': chairs,
         'positions': positions,
         'employeetasks': employee_tasks,
-        'tasks_sum' : tasks_sum
+        'tasks_sum': tasks_sum
     }
     return render(request, 'timesheet.html', context)
 
