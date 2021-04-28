@@ -63,14 +63,14 @@ def timesheet(request):
         for project in projects:
             for assignment in assignments:
                 if assignment.task.id == project.id and assignment.employee.id == employee.id:
-                    employee_prj_hours.append(assignment.percentage)
+                    employee_prj_hours.append(tuple((assignment.percentage, assignment.id, assignment.responsibility)))
                     employee_prj_hours_id.append(project.id)
         employee_list_project = []
         for project in projects:
             if project.id in employee_prj_hours_id:
                 employee_list_project.append(employee_prj_hours[employee_prj_hours_id.index(project.id)])
             else:
-                employee_list_project.append('-')
+                employee_list_project.append(tuple(("-", 0, 0)))
 
         employee_tasks.append(employee_list_project)  # For Project end
 
@@ -80,14 +80,14 @@ def timesheet(request):
         for chair in chairs:
             for assignment in assignments:
                 if assignment.task.id == chair.id and assignment.employee.id == employee.id:
-                    employee_ch_hours.append(assignment.percentage)
+                    employee_ch_hours.append(tuple((assignment.percentage, assignment.id, assignment.responsibility)))
                     employee_ch_hours_id.append(chair.id)
         employee_list_chair = []
         for chair in chairs:
             if chair.id in employee_ch_hours_id:
                 employee_list_chair.append(employee_ch_hours[employee_ch_hours_id.index(chair.id)])
             else:
-                employee_list_chair.append('-')
+                employee_list_chair.append(tuple(('-', 0, 0)))
         employee_chairs_tasks.append(employee_list_chair)
 
     i = 0
@@ -105,14 +105,14 @@ def timesheet(request):
         for position in positions:
             for assignment in assignments:
                 if assignment.task.id == position.id and assignment.employee.id == employee.id:
-                    employee_pos_hours.append(assignment.percentage)
+                    employee_pos_hours.append(tuple((assignment.percentage, assignment.id, assignment.responsibility)))
                     employee_pos_hours_id.append(position.id)
         employee_list_position = []
         for position in positions:
             if position.id in employee_pos_hours_id:
                 employee_list_position.append(employee_pos_hours[employee_pos_hours_id.index(position.id)])
             else:
-                employee_list_position.append('-')
+                employee_list_position.append(tuple(('-', 0, 0)))
         employee_positions_tasks.append(employee_list_position)
 
     ii = 0
@@ -130,7 +130,12 @@ def timesheet(request):
                 sum = sum + assignment.percentage
         tasks_sum.append(sum)
 
-    print(tasks_sum)
+    print("sum :" + str(tasks_sum))
+
+    print("employee tasks: " + str(employee_tasks))
+
+    list = [(1, 2), (4, 7), (12, 13)]
+    print("Liste : " + str(list[0]))
 
     context = {
         'employees': employees,
