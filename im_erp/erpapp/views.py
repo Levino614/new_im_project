@@ -7,8 +7,7 @@ from erpapp.models import Employee, Project, Position, Chair, Assignment, Task
 def index(request):
     employees = Employee.objects.all()
     projects = Project.objects.all()
-    positions = Position.objects.all()
-    chairs = Chair.objects.all()
+    tasks = Task.objects.all()
     assignments = Assignment.objects.all()
 
     project_infos = []
@@ -23,12 +22,22 @@ def index(request):
 
         project_infos.append((sum, ressources, title, diff))
 
+        employee_infos = []
+        for employee in employees:
+            employee_sum = 0
+            for task in tasks:
+                for assignment in assignments:
+                    if assignment.task.id == task.id and assignment.employee.id == employee.id:
+                        employee_sum += assignment.percentage
+            overload = int(round((employee_sum - employee.capacity), 2) * 100)
+            employee_infos.append((employee, employee_sum, employee.capacity, overload))
+        print(employee_infos)
+
     context = {
         'employees': employees,
         'projects': projects,
-        'positions': positions,
-        'chairs': chairs,
-        'project_infos': project_infos
+        'project_infos': project_infos,
+        'employee_infos': employee_infos
     }
     return render(request, 'index.html', context)
 
