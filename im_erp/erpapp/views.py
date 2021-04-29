@@ -11,6 +11,7 @@ def index(request):
     assignments = Assignment.objects.all()
 
     project_infos = []
+    employee_infos = []
     for project in projects:
         sum = 0
         ressources = project.ressources
@@ -22,7 +23,7 @@ def index(request):
 
         project_infos.append((sum, ressources, title, diff))
 
-        employee_infos = []
+        # Employees information
         for employee in employees:
             employee_sum = 0
             for task in tasks:
