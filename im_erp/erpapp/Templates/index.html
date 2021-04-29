@@ -118,10 +118,10 @@
 <div class="col-3">
     <div class="row">
         <h4>Warning(s):</h4>
-        {% for task_sum in tasks_sum %}
-            {% if task_sum.0 > task_sum.1 %}
+        {% for project_info in project_infos %}
+            {% if project_info.0 > project_info.1 %}
                 <div class="alert alert-warning" role="alert">
-                    {{ task_sum.2 }} is currently using too many ressources ({{ task_sum.3 }})!
+                    {{ project_info.2 }} is currently using too many ressources ({{ project_info.3 }}%)!
                 </div>
             {% endif %}
         {% endfor %}
