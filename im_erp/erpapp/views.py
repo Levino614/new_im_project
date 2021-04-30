@@ -1,16 +1,18 @@
 from django.shortcuts import render, redirect
 from erpapp.forms import EmployeeForm, ProjectForm, PositionForm, ChairForm, AssignmentForm
-from erpapp.models import Employee, Project, Position, Chair, Assignment, Task
 from django.contrib import messages
+from erpapp.models import Employee, Project, Position, Chair, AssignmentPerMonth, Task, Month
+
 
 # Create your views here.
 def index(request):
     employees = Employee.objects.all()
     projects = Project.objects.all()
     tasks = Task.objects.all()
-    assignments = Assignment.objects.all()
+    assignments = AssignmentPerMonth.objects.all()
 
     project_infos = []
+    employee_infos = []
     for project in projects:
         sum = 0
         ressources = project.ressources
@@ -22,7 +24,7 @@ def index(request):
 
         project_infos.append((sum, ressources, title, diff))
 
-        employee_infos = []
+        # Employees information
         for employee in employees:
             employee_sum = 0
             for task in tasks:
@@ -63,7 +65,7 @@ def task(request):
 
 
 def assignment(request):
-    assignments = Assignment.objects.all()
+    assignments = AssignmentPerMonth.objects.all()
     context = {
         'assignments': assignments
     }
@@ -72,7 +74,7 @@ def assignment(request):
 
 def timesheet(request):
     employees = Employee.objects.all()
-    assignments = Assignment.objects.all()
+    assignments = AssignmentPerMonth.objects.all()
     projects = Project.objects.all()
     chairs = Chair.objects.all()
     positions = Position.objects.all()
@@ -182,6 +184,14 @@ def timesheet(request):
     return render(request, 'timesheet.html', context)
 
 
+def employee_time(request):
+    employees = Employee.objects.all()
+    months = Month.objects.all()
+    assignments = AssignmentPerMonth.objects.all()
+
+    #
+
+
 def add_new_emp(request):
     if request.method == "POST":
         form = EmployeeForm(request.POST)
@@ -206,10 +216,6 @@ def add_new_proj(request):
     if request.method == "POST":
         form = ProjectForm(request.POST)
         if form.is_valid():
-            for project in Project.objects.all():
-                if  project.title == form.data['title']:
-                    messages.error(request, "Project already exists.")
-                    return redirect('/add_new_proj')
             form.save()
             return redirect('/tasks')
     else:
@@ -224,10 +230,6 @@ def add_new_pos(request):
     if request.method == "POST":
         form = PositionForm(request.POST)
         if form.is_valid():
-            for positon in Position.objects.all():
-                if positon.title == form.data['title']:
-                    messages.error(request, "Position already exists.")
-                    return redirect('/add_new_pos')
             form.save()
             return redirect('/tasks')
     else:
@@ -242,10 +244,6 @@ def add_new_chair(request):
     if request.method == "POST":
         form = ChairForm(request.POST)
         if form.is_valid():
-            for chair in Chair.objects.all():
-                if chair.title == form.data['title']:
-                    messages.error(request, "Position already exists.")
-                    return redirect('/add_new_chair')
             form.save()
             return redirect('/tasks')
     else:
@@ -307,7 +305,7 @@ def edit_chair(request, id):
 
 
 def edit_ass(request, id):
-    assignment = Assignment.objects.get(id=id)
+    assignment = AssignmentPerMonth.objects.get(id=id)
     context = {
         'assignment': assignment
     }
@@ -363,7 +361,7 @@ def update_chair(request, id):
 
 
 def update_ass(request, id):
-    chair = Assignment.objects.get(id=id)
+    chair = AssignmentPerMonth.objects.get(id=id)
     form = AssignmentForm(request.POST, instance=assignment)
     if form.is_valid():
         form.save()
@@ -399,6 +397,6 @@ def delete_chair(request, id):
 
 
 def delete_ass(request, id):
-    assignment = Assignment.objects.get(id=id)
+    assignment = AssignmentPerMonth.objects.get(id=id)
     assignment.delete()
     return redirect('/assignments')
