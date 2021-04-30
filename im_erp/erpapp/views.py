@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from erpapp.forms import EmployeeForm, ProjectForm, PositionForm, ChairForm, AssignmentForm
 from erpapp.models import Employee, Project, Position, Chair, Assignment, Task
-
+from django.contrib import messages
 
 # Create your views here.
 def index(request):
@@ -146,6 +146,12 @@ def add_new_emp(request):
     if request.method == "POST":
         form = EmployeeForm(request.POST)
         if form.is_valid():
+            employee_firstname = form.data['firstname']
+            employee_lastname = form.cleaned_data['lastname']
+            for employee in Employee.objects.all():
+                if employee.firstname == employee_firstname and employee.lastname == employee_lastname:
+                    messages.error(request, "Employee already exists.")
+                    return redirect('/add_new_emp')
             form.save()
             return redirect('/employee')
     else:
@@ -160,6 +166,10 @@ def add_new_proj(request):
     if request.method == "POST":
         form = ProjectForm(request.POST)
         if form.is_valid():
+            for project in Project.objects.all():
+                if  project.title == form.data['title']:
+                    messages.error(request, "Project already exists.")
+                    return redirect('/add_new_proj')
             form.save()
             return redirect('/tasks')
     else:
@@ -174,6 +184,10 @@ def add_new_pos(request):
     if request.method == "POST":
         form = PositionForm(request.POST)
         if form.is_valid():
+            for positon in Position.objects.all():
+                if positon.title == form.data['title']:
+                    messages.error(request, "Position already exists.")
+                    return redirect('/add_new_pos')
             form.save()
             return redirect('/tasks')
     else:
@@ -188,6 +202,10 @@ def add_new_chair(request):
     if request.method == "POST":
         form = ChairForm(request.POST)
         if form.is_valid():
+            for chair in Chair.objects.all():
+                if chair.title == form.data['title']:
+                    messages.error(request, "Position already exists.")
+                    return redirect('/add_new_chair')
             form.save()
             return redirect('/tasks')
     else:
@@ -202,6 +220,10 @@ def add_new_ass(request):
     if request.method == "POST":
         form = AssignmentForm(request.POST)
         if form.is_valid():
+            for assignment in Assignment.objects.all():
+                    if str(assignment.employee.id) == form.data['employee'] and str(assignment.task.id) == form.data['task']:
+                        messages.error(request, "Emplyoee is already assigned to this task.")
+                        return redirect('/add_new_ass')
             form.save()
             return redirect('/assignments')
     else:

@@ -15,7 +15,13 @@
   <h3>Enter Details:</h3>
   </div>
    </div>
-
+    {% if messages %}
+   {% for message in messages %}
+   <div class = "alert alert-danger" role = "alert">
+   {{message}}
+  </div>
+    {% endfor %}
+  {% endif %}
    <div class="form-group row">
   <label class="col-sm-2 col-form-label">Title:</label>
   <div class="col-sm-4">

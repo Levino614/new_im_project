@@ -82,6 +82,7 @@ class Assignment(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     start = models.DateField('From')
     end = models.DateField('To')
+
     percentage = models.FloatField('Functional Capacity')
     responsibility = models.BooleanField('Responsible', default=False)
 
