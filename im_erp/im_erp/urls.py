@@ -44,4 +44,6 @@ urlpatterns = [
     path('delete_chair/<int:id>', views.delete_chair),
     path('delete_ass/<int:id>', views.delete_ass),
     path('admin/', admin.site.urls),
+    path('employee_time/', views.employee_time),
+    path('task_time/', views.task_time)
 ]

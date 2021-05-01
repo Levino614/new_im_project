@@ -186,10 +186,47 @@ def timesheet(request):
 
 def employee_time(request):
     employees = Employee.objects.all()
+    assignments_per_month = AssignmentPerMonth.objects.all()
     months = Month.objects.all()
-    assignments = AssignmentPerMonth.objects.all()
+    assignments_sums = []
 
-    #
+    for employee in employees:
+        tasks_sum = []
+
+        for index, month in enumerate(months):
+            if index >= 12:
+                break
+            sum = 0
+            for assignment_per_month in assignments_per_month:
+                if assignment_per_month.employee == employee and assignment_per_month.month == month:
+                    sum = sum + assignment_per_month.percentage
+            tasks_sum.append(sum)
+        assignments_sums.append(tasks_sum)
+    print("Diese: ", assignments_sums)
+
+    context = {
+        'months' : months,
+        'assignments' : assignments_per_month,
+        'employee' : employee
+    }
+    return render(request, 'employee_time.html', context)
+
+
+def task_time(request):
+    tasks = Task.objects.all()
+    assignments_per_month = AssignmentPerMonth.objects.all()
+    months = Month.objects.all()
+    assignment_sums = []
+
+    for task in tasks:
+        employees_sum = []
+        for index, months in enumerate(months)
+
+
+
+
+
+    return render(request, 'task_time.html')
 
 
 def add_new_emp(request):
