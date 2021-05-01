@@ -1,5 +1,5 @@
 from django import forms
-from erpapp.models import Employee, Project, Position, Chair, AssignmentPerMonth
+from erpapp.models import Employee, Project, Position, Chair, Assignment
 
 
 class EmployeeForm(forms.ModelForm):
@@ -62,12 +62,12 @@ class ChairForm(forms.ModelForm):
 
 class AssignmentForm(forms.ModelForm):
     class Meta:
-        model = AssignmentPerMonth
-        fields = ['employee', 'task', 'month', 'duration', 'percentage', 'responsibility']
+        model = Assignment
+        fields = ['employee', 'task', 'start', 'end', 'percentage', 'responsibility']
         widgets = {'employee': forms.Select(attrs={'class': 'form-control'}),
                    'task': forms.Select(attrs={'class': 'form-control'}),
-                   'month': forms.Select(attrs={'class': 'form-control'}),
-                   'duration': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+                   'start': forms.DateInput(attrs={'class': 'form-control'}),
+                   'end': forms.DateInput(attrs={'class': 'form-control'}),
                    'percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1', 'max': 1.0, 'min': 0.0}),
                    'responsibility': forms.NullBooleanSelect(attrs={'class': 'form-control'}),
                    }

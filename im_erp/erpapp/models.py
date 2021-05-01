@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from django.db import models
 
 
@@ -119,7 +119,7 @@ class AssignmentPerMonth(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     month = models.ForeignKey(Month, on_delete=models.CASCADE)
-    duration = models.IntegerField('Duration (in months)', default=0)
+    duration = models.IntegerField('Duration (in months)', default=1)
     percentage = models.FloatField('Functional Capacity', default=0.2)
     responsibility = models.BooleanField('Responsible', default=False)
 
@@ -128,3 +128,18 @@ class AssignmentPerMonth(models.Model):
 
     class Meta:
         db_table = "assignment_per_month"
+
+
+class Assignment(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    start = models.DateField('From', default=datetime.now())
+    end = models.DateField('To', default=datetime.now())
+    percentage = models.FloatField('Functional Capacity', default=0.2)
+    responsibility = models.BooleanField('Responsible', default=False)
+
+    def __str__(self):
+        return '{} --({})-> {}'.format(self.employee, self.percentage, self.task)
+
+    class Meta:
+        db_table = "assignment"

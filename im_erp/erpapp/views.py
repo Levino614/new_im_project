@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from erpapp.forms import EmployeeForm, ProjectForm, PositionForm, ChairForm, AssignmentForm
 from django.contrib import messages
-from erpapp.models import Employee, Project, Position, Chair, AssignmentPerMonth, Task, Month
+from erpapp.models import Employee, Project, Position, Chair, Assignment, Task, Month, AssignmentPerMonth
 
 
 # Create your views here.
@@ -9,7 +9,7 @@ def index(request):
     employees = Employee.objects.all()
     projects = Project.objects.all()
     tasks = Task.objects.all()
-    assignments = AssignmentPerMonth.objects.all()
+    assignments = Assignment.objects.all()
 
     project_infos = []
     employee_infos = []
@@ -33,7 +33,6 @@ def index(request):
                         employee_sum += assignment.percentage
             overload = int(round((employee_sum - employee.capacity), 2) * 100)
             employee_infos.append((employee, employee_sum, employee.capacity, overload))
-        print(employee_infos)
 
     context = {
         'employees': employees,
@@ -65,7 +64,7 @@ def task(request):
 
 
 def assignment(request):
-    assignments = AssignmentPerMonth.objects.all()
+    assignments = Assignment.objects.all()
     context = {
         'assignments': assignments
     }
@@ -74,7 +73,7 @@ def assignment(request):
 
 def employee_task(request):
     employees = Employee.objects.all()
-    assignments = AssignmentPerMonth.objects.all()
+    assignments = Assignment.objects.all()
     projects = Project.objects.all()
     chairs = Chair.objects.all()
     positions = Position.objects.all()
@@ -197,7 +196,7 @@ def employee_time(request):
             sum = 0
             for assignment_per_month in assignments_per_month:
                 if assignment_per_month.employee == employee and assignment_per_month.month == month:
-                    sum = sum + assignment_per_month.percentage
+                    sum += int(round(assignment_per_month.percentage, 2) * 100)
             tasks_sum.append(sum)
         tasks_sum = tasks_sum[:12]
         assignments_sums.append(tasks_sum)
@@ -219,12 +218,6 @@ def task_time(request):
 
     for task in tasks:
         employees_sum = []
-        for index, months in enumerate(months):
-            pass
-
-
-
-
 
     return render(request, 'task_time.html')
 
@@ -299,10 +292,47 @@ def add_new_ass(request):
                     if str(assignment.employee.id) == form.data['employee'] and str(assignment.task.id) == form.data['task']:
                         messages.error(request, "Emplyoee is already assigned to this task.")
                         return redirect('/add_new_ass')
+                    else:
+                        # Get Information about the dates and calculate duration
+                        month_dict = {
+                            '01': 'January',
+                            '02': 'February',
+                            '03': 'March',
+                            '04': 'April',
+                            '05': 'May',
+                            '06': 'June',
+                            '07': 'July',
+                            '08': 'August',
+                            '09': 'September',
+                            '10': 'October',
+                            '11': 'November',
+                            '12': 'December',
+                        }
+                        start_year, start_month, start_day = str(form.data['start']).split('-')
+                        end_year, end_month, end_day = str(form.data['end']).split('-')
+                        month = month_dict[start_month]
+                        year_delta = int(end_year) - int(start_year)
+                        month_delta = int(end_month) - int(start_month)
+                        duration = 0
+                        if year_delta < 0:
+                            return
+                        else:
+                            duration += year_delta * 12 + month_delta
+                        # Use information to initialize AssignmentPerMonth Objects
+                        while duration > 1:
+                            assignment_per_month = AssignmentPerMonth(employee=form.data.get('employee'),
+                                                                      task=form.data.get('task'),
+                                                                      month=month, duration=duration,
+                                                                      percentage=form.data.get('percentage'),
+                                                                      responsibility=form.data.get('responsibility'))
+                            assignment_per_month.save()
+
+                            duration -= 1
             form.save()
             return redirect('/assignments')
     else:
         form = AssignmentForm()
+
     context = {
         'form': form
     }
@@ -342,7 +372,7 @@ def edit_chair(request, id):
 
 
 def edit_ass(request, id):
-    assignment = AssignmentPerMonth.objects.get(id=id)
+    assignment = Assignment.objects.get(id=id)
     context = {
         'assignment': assignment
     }
@@ -398,7 +428,6 @@ def update_chair(request, id):
 
 
 def update_ass(request, id):
-    chair = AssignmentPerMonth.objects.get(id=id)
     form = AssignmentForm(request.POST, instance=assignment)
     if form.is_valid():
         form.save()
@@ -434,6 +463,6 @@ def delete_chair(request, id):
 
 
 def delete_ass(request, id):
-    assignment = AssignmentPerMonth.objects.get(id=id)
+    assignment = Assignment.objects.get(id=id)
     assignment.delete()
     return redirect('/assignments')
