@@ -33,6 +33,9 @@ class Month(models.Model):
     def name(self):
         return '{}, {}'.format(self.month, self.year)
 
+    def short_name(self):
+        return '{}{}'.format(self.month[:3], self.year[-2:])
+
     def __str__(self):
         return self.name
 

@@ -72,7 +72,7 @@ def assignment(request):
     return render(request, 'assignment.html', context)
 
 
-def timesheet(request):
+def employee_task(request):
     employees = Employee.objects.all()
     assignments = AssignmentPerMonth.objects.all()
     projects = Project.objects.all()
@@ -181,7 +181,7 @@ def timesheet(request):
         'tasks_sum': tasks_sum,
         'employee_infos': employee_infos
     }
-    return render(request, 'timesheet.html', context)
+    return render(request, 'employee_task.html', context)
 
 
 def employee_time(request):
@@ -193,21 +193,20 @@ def employee_time(request):
     for employee in employees:
         tasks_sum = []
 
-        for index, month in enumerate(months):
-            if index >= 12:
-                break
+        for month in months:
             sum = 0
             for assignment_per_month in assignments_per_month:
                 if assignment_per_month.employee == employee and assignment_per_month.month == month:
                     sum = sum + assignment_per_month.percentage
             tasks_sum.append(sum)
+        tasks_sum = tasks_sum[:12]
         assignments_sums.append(tasks_sum)
-    print("Diese: ", assignments_sums)
 
+    months = months[:12]
     context = {
-        'months' : months,
-        'assignments' : assignments_per_month,
-        'employee' : employee
+        'months': months,
+        'assignments': assignments_sums,
+        'employees': employees
     }
     return render(request, 'employee_time.html', context)
 
@@ -220,7 +219,8 @@ def task_time(request):
 
     for task in tasks:
         employees_sum = []
-        for index, months in enumerate(months)
+        for index, months in enumerate(months):
+            pass
 
 
 
