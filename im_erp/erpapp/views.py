@@ -8,6 +8,8 @@ from erpapp.models import Employee, Project, Position, Chair, Assignment, Task, 
 def index(request):
     employees = Employee.objects.all()
     projects = Project.objects.all()
+    positions = Position.objects.all()
+    chairs = Chair.objects.all()
     tasks = Task.objects.all()
     assignments = Assignment.objects.all()
 
@@ -37,6 +39,8 @@ def index(request):
     context = {
         'employees': employees,
         'projects': projects,
+        'positions': positions,
+        'chairs': chairs,
         'project_infos': project_infos,
         'employee_infos': employee_infos
     }

@@ -5,13 +5,14 @@
 <div class="col-md-12">
     <div class="row">
         <div class="col">
-            <h2>Employee Workload over 12 Months</h2>
+            <h2>Employee Workload</h2>
             <label for="month">Choose start month:</label>
-            <select name="Start Month" id="month">
+            <select name="start_month" title="start_month" id="month">
                 {% for month in months %}
                 <option value="{{ month }}">{{ month }}</option>
                 {% endfor %}
             </select>
+            <input type="submit" value="Submit">
         </div>
     </div>
 
