@@ -1,5 +1,5 @@
-from datetime import datetime, date
 from django.db import models
+from django.utils import timezone
 
 
 # Create your models here.
@@ -27,7 +27,7 @@ class Month(models.Model):
         ('2025', '2025')
     ]
     month = models.CharField(max_length=10, choices=month_choices)
-    year = models.CharField(max_length=5, choices=year_choices, default=str(datetime.now().strftime('%Y')))
+    year = models.CharField(max_length=5, choices=year_choices, default=str(timezone.now().strftime('%Y')))
 
     @property
     def name(self):
@@ -133,8 +133,8 @@ class AssignmentPerMonth(models.Model):
 class Assignment(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
-    start = models.DateField('From', default=datetime.now())
-    end = models.DateField('To', default=datetime.now())
+    start = models.DateField('From', default=timezone.now())
+    end = models.DateField('To', default=timezone.now())
     percentage = models.FloatField('Functional Capacity', default=0.2)
     responsibility = models.BooleanField('Responsible', default=False)
 
