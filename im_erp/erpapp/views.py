@@ -266,6 +266,10 @@ def add_new_proj(request):
     if request.method == "POST":
         form = ProjectForm(request.POST)
         if form.is_valid():
+            for project in Project.objects.all():
+                if project.title == form.data['title']:
+                    messages.error(request, "Project already exists.")
+                    return redirect('/add_new_proj')
             form.save()
             return redirect('/tasks')
     else:
@@ -280,6 +284,10 @@ def add_new_pos(request):
     if request.method == "POST":
         form = PositionForm(request.POST)
         if form.is_valid():
+            for postion in Position.objects.all():
+                if postion.title == form.data['title']:
+                    messages.error(request, "Position already exists.")
+                    return redirect('/add_new_pos')
             form.save()
             return redirect('/tasks')
     else:
@@ -294,6 +302,10 @@ def add_new_chair(request):
     if request.method == "POST":
         form = ChairForm(request.POST)
         if form.is_valid():
+            for chair in Chair.objects.all():
+                if chair.title == form.data['title']:
+                    messages.error(request, "Chair already exists.")
+                    return redirect('/add_new_chair')
             form.save()
             return redirect('/tasks')
     else:
