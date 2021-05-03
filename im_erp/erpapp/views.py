@@ -76,8 +76,6 @@ def assignment(request):
         'assignments': assignments
     }
     return render(request, 'assignment.html', context)
-
-
 """def employee_task(request):
     employees = Employee.objects.all()
     assignments = Assignment.objects.all()
@@ -192,7 +190,30 @@ def assignment(request):
     }
     return render(request, 'employee_task.html', context)"""
 
-def employee_task(request):
+
+def employee_task_no_id(request):
+    date = timezone.now()
+    current_year, current_month, current_day = str(date).split('-')
+    month_dict = {
+        '1': 'January',
+        '2': 'February',
+        '3': 'March',
+        '4': 'April',
+        '5': 'May',
+        '6': 'June',
+        '7': 'July',
+        '8': 'August',
+        '9': 'September',
+        '10': 'October',
+        '11': 'November',
+        '12': 'December',
+    }
+    month_name = month_dict[str(int(current_month))]
+    month = Month.objects.get(month=month_name, year=current_year)
+    return redirect('/employee_task/{}'.format(month.id))
+
+
+def employee_task(request, id):
     employees = Employee.objects.all()
     assignments_per_months = AssignmentPerMonth.objects.all()
     projects = Project.objects.all()
@@ -203,7 +224,31 @@ def employee_task(request):
     employee_chairs_tasks = []
     employee_positions_tasks = []
     tasks_sum = []
-    month = Month.objects.get(year = '2021', month = 'June')
+
+    month_dict = {
+        '1': 'January',
+        '2': 'February',
+        '3': 'March',
+        '4': 'April',
+        '5': 'May',
+        '6': 'June',
+        '7': 'July',
+        '8': 'August',
+        '9': 'September',
+        '10': 'October',
+        '11': 'November',
+        '12': 'December',
+    }
+    if request.method == "POST":
+        start = request.POST.get('start_month')
+        start_year, start_month = str(start).split('-')
+        for month_obj in Month.objects.all():
+            if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
+                month_id = month_obj.id
+                return redirect('/employee_task/{}'.format(month_id))
+        return redirect('/employee_task/')
+
+    month = Month.objects.get(id=id)
 
     # Loop through Project Tasks
     for employee in employees:
@@ -303,7 +348,8 @@ def employee_task(request):
         'positions': positions,
         'employeetasks': employee_tasks,
         'tasks_sum': tasks_sum,
-        'employee_infos': employee_infos
+        'employee_infos': employee_infos,
+        'month': month
     }
     return render(request, 'employee_task.html', context)
 
