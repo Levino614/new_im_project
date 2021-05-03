@@ -35,6 +35,7 @@ def index(request):
                         employee_sum += assignment.percentage
             overload = int(round((employee_sum - employee.capacity), 2) * 100)
             employee_infos.append((employee, employee_sum, employee.capacity, overload))
+        print(employee_infos)
 
     context = {
         'employees': employees,
@@ -196,15 +197,19 @@ def employee_time(request):
     months = Month.objects.all()
     assignments_sums = []
 
+    # create list of lists with task sums for employees
     for employee in employees:
         tasks_sum = []
-
+        #loop through months
         for month in months:
             sum = 0
+            # if current month and employee in assignments are right sum the percentages
             for assignment_per_month in assignments_per_month:
                 if assignment_per_month.employee == employee and assignment_per_month.month == month:
                     sum += int(round(assignment_per_month.percentage, 2) * 100)
+            #append the current sum value to list
             tasks_sum.append(sum)
+        #apend list to other lists
         tasks_sum = tasks_sum[:12]
         assignments_sums.append(tasks_sum)
 
@@ -225,7 +230,15 @@ def task_time(request):
 
     for task in tasks:
         employees_sum = []
+        for month in months:
+            sum = 0
+            for assignment_per_month in assignments_per_month:
+                if assignment_per_month.task.id == task.id and assignment_per_month.month == month:
+                    sum += int(round(assignment_per_month.percentage, 2) * 100)
+            employees_sum.append(sum)
+        assignment_sums.append(employees_sum)
 
+    print("sum: ", assignment_sums)
     return render(request, 'task_time.html')
 
 
@@ -355,7 +368,6 @@ def add_new_ass(request):
             return redirect('/assignments')
     else:
         form = AssignmentForm()
-
     context = {
         'form': form
     }
