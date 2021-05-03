@@ -177,7 +177,6 @@ def employee_task(request):
         workload = employee_sum / employee.capacity
         employee_infos.append(
             (employee, int(round(employee_sum, 2) * 100), int(round(employee.capacity, 2) * 100), workload))
-    print(employee_infos)
     context = {
         'employees': employees,
         'assignments': assignments,
@@ -332,7 +331,7 @@ def add_new_ass(request):
             while duration > 0:
                 start_month = int(start_month)
                 month_name = month_dict[str(start_month)]
-                # Check if month exists already, create object otherwise
+                # Check if month already exists, create object otherwise
                 if not Month.objects.filter(month=month_name, year=start_year).exists():
                     month_obj = Month(month=month_name, year=start_year)
                     month_obj.save()
@@ -490,3 +489,7 @@ def delete_ass(request, id):
     assignment = Assignment.objects.get(id=id)
     assignment.delete()
     return redirect('/assignments')
+
+
+def test(request):
+    return render(request, 'test.html')

@@ -1,18 +1,20 @@
 {% extends "base.html" %}
-{% block title %}SmartRnD - Workload{% endblock title %}
+{% block title %}SmartRnD - Employee/Time{% endblock title %}
 
 {% block content %}
 <div class="col-md-12">
     <div class="row">
         <div class="col">
             <h2>Employee Workload</h2>
-            <label for="month">Choose start month:</label>
-            <select name="start_month" title="start_month" id="month">
-                {% for month in months %}
-                <option value="{{ month }}">{{ month }}</option>
-                {% endfor %}
-            </select>
-            <input type="submit" value="Submit">
+            <!-- <form method="POST" action="employee_time/{{  }}">-->
+                <label for="month">Choose start month:</label>
+                <select name="start_month" title="start_month" id="month">
+                    {% for month in months %}
+                    <option value="{{ month }}">{{ month }}</option>
+                    {% endfor %}
+                </select>
+                <input type="submit" value="Submit">
+            <!--</form>-->
         </div>
     </div>
 
