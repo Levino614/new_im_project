@@ -15,8 +15,8 @@ class EmployeeForm(forms.ModelForm):
                    'type': forms.Select(attrs={'class': 'form-control'}),
                    'capacity': forms.NumberInput(attrs={'class': 'form-control',
                                                         'step': '0.1', 'max': 1.0, 'min': 0.0}),
-                   'hiring_date': forms.SelectDateWidget(attrs={'class': 'form-control'}),
-                   'expiration_date': forms.SelectDateWidget(attrs={'class': 'form-control'}),
+                   'hiring_date': forms.DateInput(attrs={'class': 'form-control'}),
+                   'expiration_date': forms.DateInput(attrs={'class': 'form-control'}),
                    }
 
 
@@ -27,8 +27,8 @@ class ProjectForm(forms.ModelForm):
         widgets = {'title': forms.TextInput(attrs={'class': 'form-control'}),
                    'description': forms.TextInput(attrs={'class': 'form-control'}),
                    'ressources': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1', 'min': 0.0}),
-                   'begin': forms.SelectDateWidget(attrs={'class': 'form-control'}),
-                   'end': forms.SelectDateWidget(attrs={'class': 'form-control'}),
+                   'begin': forms.DateInput(attrs={'class': 'form-control'}),
+                   'end': forms.DateInput(attrs={'class': 'form-control'}),
                    }
 
 
@@ -68,7 +68,7 @@ class AssignmentForm(forms.ModelForm):
                    'start': forms.DateInput(attrs={'class': 'form-control'}),
                    'end': forms.DateInput(attrs={'class': 'form-control'}),
                    'percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1', 'max': 1.0, 'min': 0.0}),
-                   'responsibility': forms.Select(attrs={'class': 'form-control'}),
+                   'responsibility': forms.NullBooleanSelect(attrs={'class': 'form-control'}),
                    }
 
 

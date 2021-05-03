@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from erpapp.forms import EmployeeForm, ProjectForm, PositionForm, ChairForm, AssignmentForm, MonthForm
@@ -343,6 +345,14 @@ def add_new_emp(request):
     if request.method == "POST":
         form = EmployeeForm(request.POST)
         if form.is_valid():
+
+            # Restrictions
+            date_format = "%Y-%m-%d"
+            if datetime.date(datetime.strptime(form.data['hiring_date'], date_format)) > \
+                    datetime.date(datetime.strptime(form.data['expiration_date'], date_format)):
+                messages.error(request, "The Employees contract expires before he got hired")
+                return redirect('/add_new_ass')
+
             employee_firstname = form.data['firstname']
             employee_lastname = form.cleaned_data['lastname']
             for employee in Employee.objects.all():
@@ -363,6 +373,14 @@ def add_new_proj(request):
     if request.method == "POST":
         form = ProjectForm(request.POST)
         if form.is_valid():
+
+            # Restrictions
+            date_format = "%Y-%m-%d"
+            if datetime.date(datetime.strptime(form.data['begin'], date_format)) > \
+                    datetime.date(datetime.strptime(form.data['end'], date_format)):
+                messages.error(request, "The Project ends before it started")
+                return redirect('/add_new_ass')
+
             form.save()
             return redirect('/tasks')
     else:
@@ -406,11 +424,25 @@ def add_new_ass(request):
     if request.method == "POST":
         form = AssignmentForm(request.POST)
         if form.is_valid():
+            # Restrictions
             for assignment in Assignment.objects.all():
                 if str(assignment.employee.id) == form.data['employee'] and \
                         str(assignment.task.id) == form.data['task']:
                     messages.error(request, "Emplyoee is already assigned to this task.")
                     return redirect('/add_new_ass')
+            emp = Employee.objects.get(id=form.data['employee'])
+            project = Project.objects.get(id=form.data['task'])
+            date_format = "%Y-%m-%d"
+            if datetime.date(datetime.strptime(form.data['end'], date_format)) > emp.expiration_date:
+                messages.error(request, "The Employees contract ends before the assignment ends")
+                return redirect('/add_new_ass')
+            if datetime.date(datetime.strptime(form.data['end'], date_format)) > project.end:
+                messages.error(request, "The Project ends before the assignment ends")
+                return redirect('/add_new_ass')
+            if datetime.date(datetime.strptime(form.data['start'], date_format)) > \
+                    datetime.date(datetime.strptime(form.data['end'], date_format)):
+                messages.error(request, "The Assignment ends before it even started")
+                return redirect('/add_new_ass')
             # Get Information about the dates and calculate the duration
             emp = Employee.objects.get(id=form.data['employee'])
             task = Task.objects.get(id=form.data['task'])
