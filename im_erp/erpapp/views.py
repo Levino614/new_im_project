@@ -255,7 +255,7 @@ def employee_time(request, id):
             # append the current sum value to list
             tasks_sum.append(sum)
         # Slice list to only have 12 entries
-        tasks_sum = tasks_sum[(id-1):(id+11)]
+        tasks_sum = tasks_sum[(id - 1):(id + 11)]
         # append list to other lists
         assignments_sums.append(tasks_sum)
 
@@ -558,6 +558,54 @@ def update_chair(request, id):
 def update_ass(request, id):
     form = AssignmentForm(request.POST, instance=assignment)
     if form.is_valid():
+
+        # Get Information about the dates and calculate the duration
+        emp = Employee.objects.get(id=form.data['employee'])
+        task = Task.objects.get(id=form.data['task'])
+        percentage = form.data['percentage']
+        responsibility = form.data['responsibility']
+        month_dict = {
+            '1': 'January',
+            '2': 'February',
+            '3': 'March',
+            '4': 'April',
+            '5': 'May',
+            '6': 'June',
+            '7': 'July',
+            '8': 'August',
+            '9': 'September',
+            '10': 'October',
+            '11': 'November',
+            '12': 'December',
+        }
+        start_year, start_month, start_day = str(form.data['start']).split('-')
+        end_year, end_month, end_day = str(form.data['end']).split('-')
+        # Calculate duration of changes
+        year_delta = int(end_year) - int(start_year)
+        month_delta = int(end_month) - int(start_month)
+        duration = 0
+        if year_delta >= 0:
+            duration += year_delta * 12 + month_delta
+        print(duration)
+        # Use information to edit AssignmentPerMonth Objects
+        # as long as duration is greater than zero
+        while duration > 0:
+            start_month = int(start_month)
+            month_name = month_dict[str(start_month)]
+            month_obj = Month.objects.get(month=month_name, year=start_year)
+            # Edit AssignmentPerMonth Object
+            ass = AssignmentPerMonth.objects.get(employee=emp, task=task, month=month_obj)
+            ass.percentage = percentage
+            ass.responsibility = responsibility
+            ass.save()
+            # Increase the month and decrease the Assignments duration by one
+            if start_month < 12:
+                start_month += 1
+            else:
+                start_month = 1
+                start_year += 1
+            duration -= 1
+
         form.save()
         return redirect('/assignments')
     context = {
