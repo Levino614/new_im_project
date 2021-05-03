@@ -6,18 +6,15 @@
     <div class="row">
         <div class="col">
             <h2>Employee Workload</h2>
-            <form method="POST" class="post-form" action="/employee_time/{{ month.id }}">
+            <form method="POST" class="post-form">
             {% csrf_token %}
                 <div class="form-group row">
-                    <label class="col-sm-2 col-form-label">Choose start month in year</label>
+                    <label class="col-sm-2 col-form-label">Choose start month</label>
                     <div class="col-sm-4">
-                        {{ form.month }}
-                        {{ form.year }}
+                        <input type="month" name="start_month" id="start_month" class="form-control">
                         <input type="submit" class="btn btn-primary">
                     </div>
-
                 </div>
-
             </form>
         </div>
     </div>
