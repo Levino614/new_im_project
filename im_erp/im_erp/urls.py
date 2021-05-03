@@ -23,6 +23,10 @@ urlpatterns = [
     path('tasks/', views.task),
     path('assignments/', views.assignment),
     path('employee_task/', views.employee_task),
+    path('employee_time/', views.employee_time_no_id),
+    path('employee_time/<int:id>', views.employee_time),
+    path('task_time/', views.task_time_no_id),
+    path('task_time/<int:id>', views.task_time),
     path('add_new_emp/', views.add_new_emp),
     path('add_new_proj/', views.add_new_proj),
     path('add_new_pos/', views.add_new_pos),
@@ -44,7 +48,5 @@ urlpatterns = [
     path('delete_chair/<int:id>', views.delete_chair),
     path('delete_ass/<int:id>', views.delete_ass),
     path('admin/', admin.site.urls),
-    path('employee_time/', views.employee_time),
-    path('task_time/', views.task_time),
     path('test/', views.test)
 ]

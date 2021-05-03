@@ -1,5 +1,5 @@
 from django import forms
-from erpapp.models import Employee, Project, Position, Chair, Assignment
+from erpapp.models import Employee, Project, Position, Chair, Assignment, Month
 
 
 class EmployeeForm(forms.ModelForm):
@@ -70,4 +70,17 @@ class AssignmentForm(forms.ModelForm):
                    'end': forms.DateInput(attrs={'class': 'form-control'}),
                    'percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1', 'max': 1.0, 'min': 0.0}),
                    'responsibility': forms.NullBooleanSelect(attrs={'class': 'form-control'}),
+                   }
+
+
+class MonthForm(forms.ModelForm):
+    class Meta:
+        type_choices = [
+            ('UA', 'Undergraduate Assistant'),
+            ('RA', 'Research Assistant')
+        ]
+        model = Month
+        fields = ['month', 'year']
+        widgets = {'month': forms.Select(attrs={'class': 'form-control'}),
+                   'year': forms.Select(attrs={'class': 'form-control'}),
                    }

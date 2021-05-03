@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
-from erpapp.forms import EmployeeForm, ProjectForm, PositionForm, ChairForm, AssignmentForm
+from django.utils import timezone
+from erpapp.forms import EmployeeForm, ProjectForm, PositionForm, ChairForm, AssignmentForm, MonthForm
 from django.contrib import messages
 from erpapp.models import Employee, Project, Position, Chair, Assignment, Task, Month, AssignmentPerMonth
 
@@ -35,7 +36,6 @@ def index(request):
                         employee_sum += assignment.percentage
             overload = int(round((employee_sum - employee.capacity), 2) * 100)
             employee_infos.append((employee, employee_sum, employee.capacity, overload))
-        print(employee_infos)
 
     context = {
         'employees': employees,
@@ -191,42 +191,133 @@ def employee_task(request):
     return render(request, 'employee_task.html', context)
 
 
-def employee_time(request):
+def employee_time_no_id(request):
+    date = timezone.now()
+    current_year, current_month, current_day = str(date).split('-')
+    month_dict = {
+        '1': 'January',
+        '2': 'February',
+        '3': 'March',
+        '4': 'April',
+        '5': 'May',
+        '6': 'June',
+        '7': 'July',
+        '8': 'August',
+        '9': 'September',
+        '10': 'October',
+        '11': 'November',
+        '12': 'December',
+    }
+    month_name = month_dict[str(int(current_month))]
+    month = Month.objects.get(month=month_name, year=current_year)
+    return redirect('/employee_time/{}'.format(month.id))
+
+
+def employee_time(request, id):
     employees = Employee.objects.all()
     assignments_per_month = AssignmentPerMonth.objects.all()
     months = Month.objects.all()
     assignments_sums = []
 
+    month_dict = {
+        '1': 'January',
+        '2': 'February',
+        '3': 'March',
+        '4': 'April',
+        '5': 'May',
+        '6': 'June',
+        '7': 'July',
+        '8': 'August',
+        '9': 'September',
+        '10': 'October',
+        '11': 'November',
+        '12': 'December',
+    }
+    if request.method == "POST":
+        start = request.POST.get('start_month')
+        start_year, start_month = str(start).split('-')
+        for month_obj in Month.objects.all():
+            if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
+                month_id = month_obj.id
+                return redirect('/employee_time/{}'.format(month_id))
+        return redirect('/employee_time/')
+
     # create list of lists with task sums for employees
     for employee in employees:
         tasks_sum = []
-        #loop through months
+        # loop through months
         for month in months:
             sum = 0
             # if current month and employee in assignments are right sum the percentages
             for assignment_per_month in assignments_per_month:
                 if assignment_per_month.employee == employee and assignment_per_month.month == month:
                     sum += int(round(assignment_per_month.percentage, 2) * 100)
-            #append the current sum value to list
+            # append the current sum value to list
             tasks_sum.append(sum)
-        #apend list to other lists
-        tasks_sum = tasks_sum[:12]
+        # Slice list to only have 12 entries
+        tasks_sum = tasks_sum[(id-1):(id+11)]
+        # append list to other lists
         assignments_sums.append(tasks_sum)
 
-    months = months[:12]
+    months = months[(id - 1):(id + 11)]
     context = {
         'months': months,
         'assignments': assignments_sums,
-        'employees': employees
+        'employees': employees,
     }
     return render(request, 'employee_time.html', context)
 
 
-def task_time(request):
+def task_time_no_id(request):
+    date = timezone.now()
+    current_year, current_month, current_day = str(date).split('-')
+    month_dict = {
+        '1': 'January',
+        '2': 'February',
+        '3': 'March',
+        '4': 'April',
+        '5': 'May',
+        '6': 'June',
+        '7': 'July',
+        '8': 'August',
+        '9': 'September',
+        '10': 'October',
+        '11': 'November',
+        '12': 'December',
+    }
+    month_name = month_dict[str(int(current_month))]
+    month = Month.objects.get(month=month_name, year=current_year)
+    return redirect('/task_time/{}'.format(month.id))
+
+
+def task_time(request, id):
     tasks = Task.objects.all()
     assignments_per_month = AssignmentPerMonth.objects.all()
     months = Month.objects.all()
     assignment_sums = []
+
+    month_dict = {
+        '1': 'January',
+        '2': 'February',
+        '3': 'March',
+        '4': 'April',
+        '5': 'May',
+        '6': 'June',
+        '7': 'July',
+        '8': 'August',
+        '9': 'September',
+        '10': 'October',
+        '11': 'November',
+        '12': 'December',
+    }
+    if request.method == "POST":
+        start = request.POST.get('start_month')
+        start_year, start_month = str(start).split('-')
+        for month_obj in Month.objects.all():
+            if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
+                month_id = month_obj.id
+                return redirect('/task_time/{}'.format(month_id))
+        return redirect('/task_time/')
 
     for task in tasks:
         employees_sum = []
@@ -236,10 +327,16 @@ def task_time(request):
                 if assignment_per_month.task.id == task.id and assignment_per_month.month == month:
                     sum += int(round(assignment_per_month.percentage, 2) * 100)
             employees_sum.append(sum)
+        employees_sum = employees_sum[(id - 1):(id + 11)]
         assignment_sums.append(employees_sum)
+    months = months[(id - 1):(id + 11)]
 
-    print("sum: ", assignment_sums)
-    return render(request, 'task_time.html')
+    context = {
+        'months': months,
+        'assignments': assignment_sums,
+        'tasks': tasks
+    }
+    return render(request, 'task_time.html', context)
 
 
 def add_new_emp(request):
@@ -356,12 +453,7 @@ def add_new_ass(request):
             while duration > 0:
                 start_month = int(start_month)
                 month_name = month_dict[str(start_month)]
-                # Check if month already exists, create object otherwise
-                if not Month.objects.filter(month=month_name, year=start_year).exists():
-                    month_obj = Month(month=month_name, year=start_year)
-                    month_obj.save()
-                else:
-                    month_obj = Month.objects.get(month=month_name, year=start_year)
+                month_obj = Month.objects.get(month=month_name, year=start_year)
                 # Create AssignmentPerMonth Object
                 assignment_per_month = AssignmentPerMonth(employee=emp, task=task, month=month_obj, duration=duration,
                                                           percentage=form.data['percentage'],
@@ -380,6 +472,7 @@ def add_new_ass(request):
             return redirect('/assignments')
     else:
         form = AssignmentForm()
+
     context = {
         'form': form
     }
