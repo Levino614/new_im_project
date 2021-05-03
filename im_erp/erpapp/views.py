@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from erpapp.forms import EmployeeForm, ProjectForm, PositionForm, ChairForm, AssignmentForm
+from erpapp.forms import EmployeeForm, ProjectForm, PositionForm, ChairForm, AssignmentForm, MonthForm
 from django.contrib import messages
 from erpapp.models import Employee, Project, Position, Chair, Assignment, Task, Month, AssignmentPerMonth
 
@@ -196,6 +196,21 @@ def employee_time(request):
     months = Month.objects.all()
     assignments_sums = []
 
+    if request.method == "POST":
+        form = MonthForm(request.POST)
+        if form.is_valid():
+            start_month = form.data['month']
+            start_year = form.data['year']
+            for month_obj in Month.objects.all():
+                if month_obj.month == start_month and month_obj.year == start_year:
+                    month_id = month_obj.id
+                    # return redirect('/add_new_emp')
+            form.save()
+            return redirect('/employee_time')
+    else:
+        form = EmployeeForm()
+
+
     for employee in employees:
         tasks_sum = []
 
@@ -212,7 +227,8 @@ def employee_time(request):
     context = {
         'months': months,
         'assignments': assignments_sums,
-        'employees': employees
+        'employees': employees,
+        'form': form
     }
     return render(request, 'employee_time.html', context)
 
