@@ -22,7 +22,7 @@ urlpatterns = [
     path('employee/', views.employee),
     path('tasks/', views.task),
     path('assignments/', views.assignment),
-    path('timesheet/', views.timesheet),
+    path('employee_task/', views.employee_task),
     path('add_new_emp/', views.add_new_emp),
     path('add_new_proj/', views.add_new_proj),
     path('add_new_pos/', views.add_new_pos),
@@ -45,5 +45,6 @@ urlpatterns = [
     path('delete_ass/<int:id>', views.delete_ass),
     path('admin/', admin.site.urls),
     path('employee_time/', views.employee_time),
-    path('task_time/', views.task_time)
+    path('task_time/', views.task_time),
+    path('test/', views.test)
 ]

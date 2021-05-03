@@ -1,5 +1,5 @@
-from datetime import datetime
 from django.db import models
+from django.utils import timezone
 
 
 # Create your models here.
@@ -27,11 +27,14 @@ class Month(models.Model):
         ('2025', '2025')
     ]
     month = models.CharField(max_length=10, choices=month_choices)
-    year = models.CharField(max_length=5, choices=year_choices, default=str(datetime.now().strftime('%Y')))
+    year = models.CharField(max_length=5, choices=year_choices, default=str(timezone.now().strftime('%Y')))
 
     @property
     def name(self):
         return '{}, {}'.format(self.month, self.year)
+
+    def short_name(self):
+        return '{}{}'.format(self.month[:3], self.year[-2:])
 
     def __str__(self):
         return self.name
@@ -116,7 +119,7 @@ class AssignmentPerMonth(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     month = models.ForeignKey(Month, on_delete=models.CASCADE)
-    duration = models.IntegerField('Duration (in months)', default=0)
+    duration = models.IntegerField('Duration (in months)', default=1)
     percentage = models.FloatField('Functional Capacity', default=0.2)
     responsibility = models.BooleanField('Responsible', default=False)
 
@@ -125,3 +128,18 @@ class AssignmentPerMonth(models.Model):
 
     class Meta:
         db_table = "assignment_per_month"
+
+
+class Assignment(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    start = models.DateField('From', default=timezone.now())
+    end = models.DateField('To', default=timezone.now())
+    percentage = models.FloatField('Functional Capacity', default=0.2)
+    responsibility = models.BooleanField('Responsible', default=False)
+
+    def __str__(self):
+        return '{} --({})-> {}'.format(self.employee, self.percentage, self.task)
+
+    class Meta:
+        db_table = "assignment"
