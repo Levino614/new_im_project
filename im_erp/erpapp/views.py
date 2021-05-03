@@ -76,7 +76,7 @@ def assignment(request):
     return render(request, 'assignment.html', context)
 
 
-def employee_task(request):
+"""def employee_task(request):
     employees = Employee.objects.all()
     assignments = Assignment.objects.all()
     projects = Project.objects.all()
@@ -791,48 +791,6 @@ def delete_chair(request, id):
 def delete_ass(request, id):
     assignment = Assignment.objects.get(id=id)
     assignment.delete()
-
-    month_dict = {
-        '1': 'January',
-        '2': 'February',
-        '3': 'March',
-        '4': 'April',
-        '5': 'May',
-        '6': 'June',
-        '7': 'July',
-        '8': 'August',
-        '9': 'September',
-        '10': 'October',
-        '11': 'November',
-        '12': 'December',
-    }
-    start = assignment.start
-    end = assignment.end
-    start_year, start_month, start_day = str(start).split('-')
-    end_year, end_month, end_day = str(end).split('-')
-    year_delta = int(end_year) - int(start_year)
-    month_delta = int(end_month) - int(start_month)
-    duration = 0
-    if year_delta >= 0:
-        duration += year_delta * 12 + month_delta
-
-    while duration > 0:
-        start_month = int(start_month)
-        month_name = month_dict[str(start_month)]
-        month_obj = Month.objects.get(month=month_name, year=start_year)
-        # Create AssignmentPerMonth Object
-        assignment_per_month = AssignmentPerMonth.objects.get(employee=assignment.employee, task=assignment.task,
-                                                              month=month_obj)
-        assignment_per_month.delete()
-
-        # Increase the month and decrease the Assignments duration by one
-        if start_month < 12:
-            start_month += 1
-        else:
-            start_month = 1
-            start_year += 1
-        duration -= 1
-
     return redirect('/assignments')
 
 
