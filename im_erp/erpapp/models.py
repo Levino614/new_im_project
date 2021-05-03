@@ -78,7 +78,6 @@ class Task(models.Model):
 class Project(Task):
     ressources = models.FloatField('Ressources')
     begin = models.DateField('Project Start')
-    duration = models.FloatField('Duration (in months)')
     end = models.DateField('Project End')
 
     def __str__(self):
@@ -119,7 +118,7 @@ class AssignmentPerMonth(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     month = models.ForeignKey(Month, on_delete=models.CASCADE)
-    duration = models.IntegerField('Duration (in months)', default=1)
+    duration = models.IntegerField('Duration (in months)')
     percentage = models.FloatField('Functional Capacity', default=0.2)
     responsibility = models.BooleanField('Responsible', default=False)
 

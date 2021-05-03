@@ -76,7 +76,7 @@ def assignment(request):
     return render(request, 'assignment.html', context)
 
 
-"""def employee_task(request):
+def employee_task(request):
     employees = Employee.objects.all()
     assignments = Assignment.objects.all()
     projects = Project.objects.all()
@@ -87,7 +87,6 @@ def assignment(request):
     employee_chairs_tasks = []
     employee_positions_tasks = []
     tasks_sum = []
-    month = Month('2021','June')
 
     # Loop through Project Tasks
     for employee in employees:
@@ -306,6 +305,7 @@ def employee_task(request):
     }
     return render(request, 'employee_task.html', context)
 
+
 def employee_time_no_id(request):
     date = timezone.now()
     current_year, current_month, current_day = str(date).split('-')
@@ -370,7 +370,7 @@ def employee_time(request, id):
             # append the current sum value to list
             tasks_sum.append(sum)
         # Slice list to only have 12 entries
-        tasks_sum = tasks_sum[(id-1):(id+11)]
+        tasks_sum = tasks_sum[(id - 1):(id + 11)]
         # append list to other lists
         assignments_sums.append(tasks_sum)
 
@@ -478,10 +478,6 @@ def add_new_proj(request):
     if request.method == "POST":
         form = ProjectForm(request.POST)
         if form.is_valid():
-            for project in Project.objects.all():
-                if project.title == form.data['title']:
-                    messages.error(request, "Project already exists.")
-                    return redirect('/add_new_proj')
             form.save()
             return redirect('/tasks')
     else:
@@ -496,10 +492,6 @@ def add_new_pos(request):
     if request.method == "POST":
         form = PositionForm(request.POST)
         if form.is_valid():
-            for postion in Position.objects.all():
-                if postion.title == form.data['title']:
-                    messages.error(request, "Position already exists.")
-                    return redirect('/add_new_pos')
             form.save()
             return redirect('/tasks')
     else:
@@ -514,10 +506,6 @@ def add_new_chair(request):
     if request.method == "POST":
         form = ChairForm(request.POST)
         if form.is_valid():
-            for chair in Chair.objects.all():
-                if chair.title == form.data['title']:
-                    messages.error(request, "Chair already exists.")
-                    return redirect('/add_new_chair')
             form.save()
             return redirect('/tasks')
     else:
@@ -598,7 +586,7 @@ def add_new_ass(request):
             duration = 0
             if year_delta >= 0:
                 duration += year_delta * 12 + month_delta
-            print("duration: ", duration)
+            print(duration)
             # Use information to initialize AssignmentPerMonth Objects
             # as long as duration of Assignment is greater than zero
             while duration > 0:
@@ -721,6 +709,53 @@ def update_chair(request, id):
 def update_ass(request, id):
     form = AssignmentForm(request.POST, instance=assignment)
     if form.is_valid():
+
+        # Get Information about the dates and calculate the duration
+        emp = Employee.objects.get(id=form.data['employee'])
+        task = Task.objects.get(id=form.data['task'])
+        percentage = form.data['percentage']
+        responsibility = form.data['responsibility']
+        month_dict = {
+            '1': 'January',
+            '2': 'February',
+            '3': 'March',
+            '4': 'April',
+            '5': 'May',
+            '6': 'June',
+            '7': 'July',
+            '8': 'August',
+            '9': 'September',
+            '10': 'October',
+            '11': 'November',
+            '12': 'December',
+        }
+        start_year, start_month, start_day = str(form.data['start']).split('-')
+        end_year, end_month, end_day = str(form.data['end']).split('-')
+        # Calculate duration of changes
+        year_delta = int(end_year) - int(start_year)
+        month_delta = int(end_month) - int(start_month)
+        duration = 0
+        if year_delta >= 0:
+            duration += year_delta * 12 + month_delta
+        # Use information to edit AssignmentPerMonth Objects
+        # as long as duration is greater than zero
+        while duration > 0:
+            start_month = int(start_month)
+            month_name = month_dict[str(start_month)]
+            month_obj = Month.objects.get(month=month_name, year=start_year)
+            # Edit AssignmentPerMonth Object
+            ass = AssignmentPerMonth.objects.get(employee=emp, task=task, month=month_obj)
+            ass.percentage = percentage
+            ass.responsibility = responsibility
+            ass.save()
+            # Increase the month and decrease the Assignments duration by one
+            if start_month < 12:
+                start_month += 1
+            else:
+                start_month = 1
+                start_year += 1
+            duration -= 1
+
         form.save()
         return redirect('/assignments')
     context = {
@@ -756,6 +791,48 @@ def delete_chair(request, id):
 def delete_ass(request, id):
     assignment = Assignment.objects.get(id=id)
     assignment.delete()
+
+    month_dict = {
+        '1': 'January',
+        '2': 'February',
+        '3': 'March',
+        '4': 'April',
+        '5': 'May',
+        '6': 'June',
+        '7': 'July',
+        '8': 'August',
+        '9': 'September',
+        '10': 'October',
+        '11': 'November',
+        '12': 'December',
+    }
+    start = assignment.start
+    end = assignment.end
+    start_year, start_month, start_day = str(start).split('-')
+    end_year, end_month, end_day = str(end).split('-')
+    year_delta = int(end_year) - int(start_year)
+    month_delta = int(end_month) - int(start_month)
+    duration = 0
+    if year_delta >= 0:
+        duration += year_delta * 12 + month_delta
+
+    while duration > 0:
+        start_month = int(start_month)
+        month_name = month_dict[str(start_month)]
+        month_obj = Month.objects.get(month=month_name, year=start_year)
+        # Create AssignmentPerMonth Object
+        assignment_per_month = AssignmentPerMonth.objects.get(employee=assignment.employee, task=assignment.task,
+                                                              month=month_obj)
+        assignment_per_month.delete()
+
+        # Increase the month and decrease the Assignments duration by one
+        if start_month < 12:
+            start_month += 1
+        else:
+            start_month = 1
+            start_year += 1
+        duration -= 1
+
     return redirect('/assignments')
 
 

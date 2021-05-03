@@ -23,12 +23,11 @@ class EmployeeForm(forms.ModelForm):
 class ProjectForm(forms.ModelForm):
     class Meta:
         model = Project
-        fields = ['title', 'description', 'ressources', 'begin', 'duration', 'end']
+        fields = ['title', 'description', 'ressources', 'begin', 'end']
         widgets = {'title': forms.TextInput(attrs={'class': 'form-control'}),
                    'description': forms.TextInput(attrs={'class': 'form-control'}),
                    'ressources': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1', 'min': 0.0}),
                    'begin': forms.SelectDateWidget(attrs={'class': 'form-control'}),
-                   'duration': forms.TextInput(attrs={'class': 'form-control'}),
                    'end': forms.SelectDateWidget(attrs={'class': 'form-control'}),
                    }
 
@@ -69,7 +68,7 @@ class AssignmentForm(forms.ModelForm):
                    'start': forms.DateInput(attrs={'class': 'form-control'}),
                    'end': forms.DateInput(attrs={'class': 'form-control'}),
                    'percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1', 'max': 1.0, 'min': 0.0}),
-                   'responsibility': forms.NullBooleanSelect(attrs={'class': 'form-control'}),
+                   'responsibility': forms.Select(attrs={'class': 'form-control'}),
                    }
 
 
