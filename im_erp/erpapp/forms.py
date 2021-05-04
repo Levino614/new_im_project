@@ -72,6 +72,8 @@ class AssignmentForm(forms.ModelForm):
                    }
 
 
+
+
 class MonthForm(forms.ModelForm):
     class Meta:
         type_choices = [

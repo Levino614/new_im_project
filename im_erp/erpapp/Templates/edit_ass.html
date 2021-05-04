@@ -10,19 +10,19 @@
   <div class="form-group row">
   <label class="col-sm-1 col-form-label"></label>
   <div class="col-sm-4">
-  <h3>Update Details</h3>
+  <h3>Update Assignment of {{ assignment.employee }} to {{ assignment.task }}</h3>
   </div>
    </div>
    <div class="form-group row">
   <label class="col-sm-2 col-form-label">Employee:</label>
   <div class="col-sm-4">
-   <input type="text" class="form-control" name="employee" id="id_employee" required maxlength="32" value="{{ assignment.employee }}" disabled/>
+   <input type="text" class="form-control" name="employee" id="id_employee" required maxlength="32" value="{{ assignment.employee.id }}" disabled/>
   </div>
    </div>
   <div class="form-group row">
   <label class="col-sm-2 col-form-label">Task:</label>
   <div class="col-sm-4">
-   <input type="text" class="form-control" name="task" id="id_task" required maxlength="32" value="{{ assignment.task }}" disabled/>
+   <input type="text" class="form-control" name="task" id="id_task" required maxlength="32" value="{{ assignment.task.id }}" disabled/>
   </div>
    </div>
   <div class="form-group row">

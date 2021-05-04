@@ -76,6 +76,8 @@ def assignment(request):
         'assignments': assignments
     }
     return render(request, 'assignment.html', context)
+
+
 """def employee_task(request):
     employees = Employee.objects.all()
     assignments = Assignment.objects.all()
@@ -258,7 +260,8 @@ def employee_task(request, id):
             for assignment_per_month in assignments_per_months:
                 if assignment_per_month.task.id == project.id and assignment_per_month.employee.id == employee.id and assignment_per_month.month == month:
                     employee_prj_hours.append(
-                        (int(round(assignment_per_month.percentage, 2) * 100), assignment_per_month.id, assignment_per_month.responsibility))
+                        (int(round(assignment_per_month.percentage, 2) * 100), assignment_per_month.id,
+                         assignment_per_month.responsibility))
                     employee_prj_hours_id.append(project.id)
         employee_list_project = []
         for project in projects:
@@ -276,7 +279,8 @@ def employee_task(request, id):
             for assignment_per_months in assignments_per_months:
                 if assignment_per_months.task.id == chair.id and assignment_per_months.employee.id == employee.id and assignment_per_months.month == month:
                     employee_ch_hours.append(
-                        (int(round(assignment_per_months.percentage, 2) * 100), assignment_per_months.id, assignment_per_months.responsibility))
+                        (int(round(assignment_per_months.percentage, 2) * 100), assignment_per_months.id,
+                         assignment_per_months.responsibility))
                     employee_ch_hours_id.append(chair.id)
         employee_list_chair = []
         for chair in chairs:
@@ -302,7 +306,8 @@ def employee_task(request, id):
             for assignment_per_months in assignments_per_months:
                 if assignment_per_months.task.id == position.id and assignment_per_months.employee.id == employee.id and assignment_per_months.month == month:
                     employee_pos_hours.append(
-                        (int(round(assignment_per_months.percentage, 2) * 100), assignment_per_months.id, assignment_per_months.responsibility))
+                        (int(round(assignment_per_months.percentage, 2) * 100), assignment_per_months.id,
+                         assignment_per_months.responsibility))
                     employee_pos_hours_id.append(position.id)
         employee_list_position = []
         for position in positions:
@@ -585,7 +590,7 @@ def add_new_ass(request):
     if request.method == "POST":
         form = AssignmentForm(request.POST)
         if form.is_valid():
-            #CHECK FOR DUPLICATES
+            # CHECK FOR DUPLICATES
             for assignment in Assignment.objects.all():
                 if str(assignment.employee.id) == form.data['employee'] and \
                         str(assignment.task.id) == form.data['task']:
@@ -605,22 +610,22 @@ def add_new_ass(request):
                 messages.error(request, "The Assignment ends before it even started")
                 return redirect('/add_new_ass')
             # CHECK FOR POSITION <= 100%
-            #Get id's of all postions
+            # Get id's of all postions
             postions = Position.objects.all()
             postion_ids = []
             for position in postions:
                 postion_ids.append(position.id)
-            print("ids: ", postion_ids)
             # check if selected id is present in postion_ids list
             if int(form.data['task']) in postion_ids:
                 sum = 0
-            # sum all percentages for this position
+                # sum all percentages for this position
                 for assignment in Assignment.objects.all():
                     if assignment.task.id == int(form.data['task']):
                         sum = sum + assignment.percentage
-            # check if new assignment would overbook position
-                if sum + float(form.data['percentage'])  > 1:
-                    messages.error(request, "This assignment would overbook postion( Title: " + Position.objects.get(id = int(form.data['task'])).title + ")." )
+                # check if new assignment would overbook position
+                if sum + float(form.data['percentage']) > 1:
+                    messages.error(request, "This assignment would overbook postion( Title: " + Position.objects.get(
+                        id=int(form.data['task'])).title + ").")
                     return redirect('/add_new_ass')
             # CHECK IF CHAIR ISNT OVERBOOKED
             # get ids of all chairs
@@ -628,15 +633,16 @@ def add_new_ass(request):
             chair_ids = []
             for chair in chairs:
                 chair_ids.append(chair.id)
-            #count assignments to current chair
+            # count assignments to current chair
             if int(form.data['task']) in chair_ids:
                 count = 0
                 for assignment in Assignment.objects.all():
-                   if assignment.task.id == int(form.data['task']):
-                       count = count + 1
+                    if assignment.task.id == int(form.data['task']):
+                        count = count + 1
                 # check if count equal to requirement of current chair, if true dont allow assign
-                if Chair.objects.get(id = int(form.data['task'])).requirement == count:
-                    messages.error(request, "Chair " + Chair.objects.get(id = int(form.data['task'])).title +  " has already enough employees.")
+                if Chair.objects.get(id=int(form.data['task'])).requirement == count:
+                    messages.error(request, "Chair " + Chair.objects.get(
+                        id=int(form.data['task'])).title + " has already enough employees.")
                     return redirect('/add_new_ass')
 
             # Get Information about the dates and calculate the duration
@@ -667,6 +673,7 @@ def add_new_ass(request):
             # as long as duration of Assignment is greater than zero
             while duration > 0:
                 start_month = int(start_month)
+                start_year = int(start_year)
                 month_name = month_dict[str(start_month)]
                 month_obj = Month.objects.get(month=month_name, year=start_year)
                 # Create AssignmentPerMonth Object
@@ -783,14 +790,17 @@ def update_chair(request, id):
 
 
 def update_ass(request, id):
+    assignment = Assignment.objects.get(id=id)
     form = AssignmentForm(request.POST, instance=assignment)
     if form.is_valid():
-
         # Get Information about the dates and calculate the duration
-        emp = Employee.objects.get(id=form.data['employee'])
-        task = Task.objects.get(id=form.data['task'])
+        emp = Employee.objects.filter(id=form.data['employee']).first()
+        task = Task.objects.filter(id=form.data['task']).first()
         percentage = form.data['percentage']
-        responsibility = form.data['responsibility']
+        try:
+            responsibility = form.data['responsibility']
+        except:
+            responsibility = False
         month_dict = {
             '1': 'January',
             '2': 'February',
@@ -805,6 +815,12 @@ def update_ass(request, id):
             '11': 'November',
             '12': 'December',
         }
+        '''# start_alt -> start_neu               end_neu -> end_alt
+        date_format = '%Y-%m-%d'
+        start_year_alt, start_month_alt, start_day_alt = str(datetime.date(datetime.strptime(assignment.start, 
+                                                                                             date_format))).split('-')
+        
+        print(assignment.start)'''
         start_year, start_month, start_day = str(form.data['start']).split('-')
         end_year, end_month, end_day = str(form.data['end']).split('-')
         # Calculate duration of changes
@@ -816,6 +832,7 @@ def update_ass(request, id):
         # Use information to edit AssignmentPerMonth Objects
         # as long as duration is greater than zero
         while duration > 0:
+            start_year = int(start_year)
             start_month = int(start_month)
             month_name = month_dict[str(start_month)]
             month_obj = Month.objects.get(month=month_name, year=start_year)
