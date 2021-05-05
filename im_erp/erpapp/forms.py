@@ -72,6 +72,10 @@ class AssignmentForm(forms.ModelForm):
                    }
 
 
+class EditAssignmentForm(forms.ModelForm):
+    class Meta:
+        model = Assignment
+        exclude = ['employee', 'task']
 
 
 class MonthForm(forms.ModelForm):

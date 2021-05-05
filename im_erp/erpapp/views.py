@@ -2,7 +2,8 @@ from datetime import datetime
 
 from django.shortcuts import render, redirect
 from django.utils import timezone
-from erpapp.forms import EmployeeForm, ProjectForm, PositionForm, ChairForm, AssignmentForm, MonthForm
+from erpapp.forms import EmployeeForm, ProjectForm, PositionForm, ChairForm, AssignmentForm, EditAssignmentForm, \
+    MonthForm
 from django.contrib import messages
 from erpapp.models import Employee, Project, Position, Chair, Assignment, Task, Month, AssignmentPerMonth
 
@@ -791,16 +792,23 @@ def update_chair(request, id):
 
 def update_ass(request, id):
     assignment = Assignment.objects.get(id=id)
-    form = AssignmentForm(request.POST, instance=assignment)
+    # Get information about old timeframe before update
+    start_year_old, start_month_old, _ = str(assignment.start).split('-')
+    end_year_old, end_month_old, _ = str(assignment.end).split('-')
+    print(assignment.start, assignment.end)
+    form = EditAssignmentForm(request.POST, instance=assignment)
     if form.is_valid():
-        # Get Information about the dates and calculate the duration
-        emp = Employee.objects.filter(id=form.data['employee']).first()
-        task = Task.objects.filter(id=form.data['task']).first()
+        # Get form data
+        emp = Employee.objects.filter(id=assignment.employee.id).first()
+        print('Emp:', emp)
+        task = Task.objects.filter(id=assignment.task.id).first()
+        print('Task:', task)
         percentage = form.data['percentage']
         try:
             responsibility = form.data['responsibility']
         except:
             responsibility = False
+
         month_dict = {
             '1': 'January',
             '2': 'February',
@@ -815,33 +823,95 @@ def update_ass(request, id):
             '11': 'November',
             '12': 'December',
         }
-        '''# start_alt -> start_neu               end_neu -> end_alt
-        date_format = '%Y-%m-%d'
-        start_year_alt, start_month_alt, start_day_alt = str(datetime.date(datetime.strptime(assignment.start, 
-                                                                                             date_format))).split('-')
-        
-        print(assignment.start)'''
-        start_year, start_month, start_day = str(form.data['start']).split('-')
-        end_year, end_month, end_day = str(form.data['end']).split('-')
+        # Get information about the dates
+        print(form.data)
+        start_year, start_month, _ = str(form.data['start']).split('-')
+        end_year, end_month, _ = str(form.data['end']).split('-')
+        end_year_update, end_month_update, _ = str(form.data['end']).split('-')
+
+        # Delete AssignmentPerMonths before and after the newly set timeframe:
+        # start_old -> start    and    end -> end_old
+
+        # Before: start_old -> start
+        year_delta_before = int(start_year) - int(start_year_old)
+        month_delta_before = int(start_month) - int(start_month_old)
+        duration_before = 0
+        if year_delta_before >= 0:
+            duration_before += year_delta_before * 12 + month_delta_before
+        # Use information to delete AssignmentPerMonth Objects (in timeframe start_old -> start)
+        while duration_before > 0:
+            print('Duration before:', duration_before)
+            start_year_old = int(start_year_old)
+            start_month_old = int(start_month_old)
+            month_name = month_dict[str(start_month_old)]
+            month_obj = Month.objects.get(month=month_name, year=start_year_old)
+            print('Month before:', month_obj)
+            # Delete AssignmentPerMonth Objects
+            ass = AssignmentPerMonth.objects.get(employee=emp, task=task, month=month_obj)
+            print('Assignment:', ass)
+            ass.delete()
+            # Iterator while loop
+            if start_month_old < 12:
+                start_month_old += 1
+            else:
+                start_month_old = 1
+                start_year_old += 1
+            duration_before -= 1
+
+        # After: end -> end_old
+        year_delta_after = int(end_year_old) - int(end_year)
+        month_delta_after = int(end_month_old) - int(end_month)
+        duration_after = 0
+        if year_delta_after >= 0:
+            duration_after += year_delta_after * 12 + month_delta_after
+        # Use information to delete AssignmentPerMonth Objects (in timeframe end -> end_old)
+        while duration_after > 0:
+            print('Duration after:', duration_after)
+            end_year = int(end_year)
+            end_month = int(end_month)
+            month_name = month_dict[str(end_month)]
+            month_obj = Month.objects.get(month=month_name, year=end_year)
+            print('Month after:', month_obj)
+            # Delete AssignmentPerMonth Objects
+            ass = AssignmentPerMonth.objects.get(employee=emp, task=task, month=month_obj)
+            print('Assignment:', ass)
+            ass.delete()
+            # Iterator while loop
+            if end_month < 12:
+                end_month += 1
+            else:
+                end_month = 1
+                end_year += 1
+            duration_after -= 1
+
+        # Update AssignmentPerMonths within the newly set timeframe
+        print('-----Update-----')
+        # start -> end
         # Calculate duration of changes
-        year_delta = int(end_year) - int(start_year)
-        month_delta = int(end_month) - int(start_month)
+        print('Start:', start_year, start_month)
+        print('End:', end_year_update, end_month_update)
+        year_delta = int(end_year_update) - int(start_year)
+        print('Year delta:', year_delta)
+        month_delta = int(end_month_update) - int(start_month)
+        print('Month delta', month_delta)
         duration = 0
         if year_delta >= 0:
             duration += year_delta * 12 + month_delta
         # Use information to edit AssignmentPerMonth Objects
-        # as long as duration is greater than zero
         while duration > 0:
+            print('Duration:', duration)
             start_year = int(start_year)
             start_month = int(start_month)
             month_name = month_dict[str(start_month)]
             month_obj = Month.objects.get(month=month_name, year=start_year)
+            print('Month:', month_obj)
             # Edit AssignmentPerMonth Object
             ass = AssignmentPerMonth.objects.get(employee=emp, task=task, month=month_obj)
+            print('Assignment:', ass)
             ass.percentage = percentage
             ass.responsibility = responsibility
             ass.save()
-            # Increase the month and decrease the Assignments duration by one
+            # Iterator while loop
             if start_month < 12:
                 start_month += 1
             else:
@@ -883,7 +953,6 @@ def delete_chair(request, id):
 
 def delete_ass(request, id):
     assignment = Assignment.objects.get(id=id)
-    assignment.delete()
 
     month_dict = {
         '1': 'January',
@@ -926,6 +995,7 @@ def delete_ass(request, id):
             start_year += 1
         duration -= 1
 
+    assignment.delete()
     return redirect('/assignments')
 
 
