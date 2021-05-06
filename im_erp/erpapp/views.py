@@ -404,7 +404,7 @@ def employee_time(request, id):
     }
     if request.method == "POST":
         start = request.POST.get('start_month')
-        start_year, start_month, _ = str(start).split('-')
+        start_year, start_month = str(start).split('-')
         for month_obj in Month.objects.all():
             if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
                 month_id = month_obj.id
