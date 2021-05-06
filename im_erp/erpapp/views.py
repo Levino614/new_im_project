@@ -196,7 +196,7 @@ def assignment(request):
 
 def employee_task_no_id(request):
     date = timezone.now()
-    current_year, current_month, current_day = str(date).split('-')
+    current_year, current_month, _ = str(date).split('-')
     month_dict = {
         '1': 'January',
         '2': 'February',
@@ -244,7 +244,7 @@ def employee_task(request, id):
     }
     if request.method == "POST":
         start = request.POST.get('start_month')
-        start_year, start_month = str(start).split('-')
+        start_year, start_month, _ = str(start).split('-')
         for month_obj in Month.objects.all():
             if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
                 month_id = month_obj.id
@@ -362,7 +362,7 @@ def employee_task(request, id):
 
 def employee_time_no_id(request):
     date = timezone.now()
-    current_year, current_month, current_day = str(date).split('-')
+    current_year, current_month, _ = str(date).split('-')
     month_dict = {
         '1': 'January',
         '2': 'February',
@@ -404,7 +404,7 @@ def employee_time(request, id):
     }
     if request.method == "POST":
         start = request.POST.get('start_month')
-        start_year, start_month = str(start).split('-')
+        start_year, start_month, _ = str(start).split('-')
         for month_obj in Month.objects.all():
             if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
                 month_id = month_obj.id
@@ -439,7 +439,7 @@ def employee_time(request, id):
 
 def task_time_no_id(request):
     date = timezone.now()
-    current_year, current_month, current_day = str(date).split('-')
+    current_year, current_month, _ = str(date).split('-')
     month_dict = {
         '1': 'January',
         '2': 'February',
@@ -481,7 +481,7 @@ def task_time(request, id):
     }
     if request.method == "POST":
         start = request.POST.get('start_month')
-        start_year, start_month = str(start).split('-')
+        start_year, start_month, _ = str(start).split('-')
         for month_obj in Month.objects.all():
             if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
                 month_id = month_obj.id
@@ -598,14 +598,20 @@ def add_new_ass(request):
                     messages.error(request, "Emplyoee is already assigned to this task.")
                     return redirect('/add_new_ass')
             emp = Employee.objects.get(id=form.data['employee'])
-            project = Project.objects.get(id=form.data['task'])
+            tsk = Task.objects.get(id=form.data['task'])
             date_format = "%Y-%m-%d"
             if datetime.date(datetime.strptime(form.data['end'], date_format)) > emp.expiration_date:
                 messages.error(request, "The Employees contract ends before the assignment ends")
                 return redirect('/add_new_ass')
-            if datetime.date(datetime.strptime(form.data['end'], date_format)) > project.end:
-                messages.error(request, "The Project ends before the assignment ends")
-                return redirect('/add_new_ass')
+            # Only check this constraint for projects
+            try:
+                project = Project.objects.get(id=form.data['task'])
+                if datetime.date(datetime.strptime(form.data['end'], date_format)) > project.end:
+                    messages.error(request, "The Project ends before the assignment ends")
+                    return redirect('/add_new_ass')
+            except Project.DoesNotExist:
+                print('Task is not a project')
+
             if datetime.date(datetime.strptime(form.data['start'], date_format)) > \
                     datetime.date(datetime.strptime(form.data['end'], date_format)):
                 messages.error(request, "The Assignment ends before it even started")
@@ -663,8 +669,8 @@ def add_new_ass(request):
                 '11': 'November',
                 '12': 'December',
             }
-            start_year, start_month, start_day = str(form.data['start']).split('-')
-            end_year, end_month, end_day = str(form.data['end']).split('-')
+            start_year, start_month, _ = str(form.data['start']).split('-')
+            end_year, end_month, _ = str(form.data['end']).split('-')
             year_delta = int(end_year) - int(start_year)
             month_delta = int(end_month) - int(start_month)
             duration = 0
@@ -970,8 +976,8 @@ def delete_ass(request, id):
     }
     start = assignment.start
     end = assignment.end
-    start_year, start_month, start_day = str(start).split('-')
-    end_year, end_month, end_day = str(end).split('-')
+    start_year, start_month, _ = str(start).split('-')
+    end_year, end_month, _ = str(end).split('-')
     year_delta = int(end_year) - int(start_year)
     month_delta = int(end_month) - int(start_month)
     duration = 0

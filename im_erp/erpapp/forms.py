@@ -14,7 +14,7 @@ class EmployeeForm(forms.ModelForm):
                    'lastname': forms.TextInput(attrs={'class': 'form-control'}),
                    'type': forms.Select(attrs={'class': 'form-control'}),
                    'capacity': forms.NumberInput(attrs={'class': 'form-control',
-                                                        'step': '0.1', 'max': 1.0, 'min': 0.0}),
+                                                        'step': '0.01', 'max': 1.0, 'min': 0.0}),
                    'hiring_date': forms.DateInput(attrs={'class': 'form-control'}),
                    'expiration_date': forms.DateInput(attrs={'class': 'form-control'}),
                    }
@@ -26,7 +26,7 @@ class ProjectForm(forms.ModelForm):
         fields = ['title', 'description', 'ressources', 'begin', 'end']
         widgets = {'title': forms.TextInput(attrs={'class': 'form-control'}),
                    'description': forms.TextInput(attrs={'class': 'form-control'}),
-                   'ressources': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1', 'min': 0.0}),
+                   'ressources': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': 0.0}),
                    'begin': forms.DateInput(attrs={'class': 'form-control'}),
                    'end': forms.DateInput(attrs={'class': 'form-control'}),
                    }
@@ -38,7 +38,7 @@ class PositionForm(forms.ModelForm):
         fields = ['title', 'description', 'ressources']
         widgets = {'title': forms.TextInput(attrs={'class': 'form-control'}),
                    'description': forms.TextInput(attrs={'class': 'form-control'}),
-                   'ressources': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1', 'min': 0.0}),
+                   'ressources': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': 0.0}),
                    }
 
 
@@ -55,7 +55,7 @@ class ChairForm(forms.ModelForm):
         widgets = {'title': forms.TextInput(attrs={'class': 'form-control'}),
                    'description': forms.TextInput(attrs={'class': 'form-control'}),
                    'rotation': forms.Select(attrs={'class': 'form-control'}),
-                   'requirement': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1', 'min': 0.0}),
+                   'requirement': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': 0.0}),
                    }
 
 
@@ -67,7 +67,7 @@ class AssignmentForm(forms.ModelForm):
                    'task': forms.Select(attrs={'class': 'form-control'}),
                    'start': forms.DateInput(attrs={'class': 'form-control'}),
                    'end': forms.DateInput(attrs={'class': 'form-control'}),
-                   'percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1', 'max': 1.0, 'min': 0.0}),
+                   'percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'max': 1.0, 'min': 0.0}),
                    'responsibility': forms.NullBooleanSelect(attrs={'class': 'form-control'}),
                    }
 
