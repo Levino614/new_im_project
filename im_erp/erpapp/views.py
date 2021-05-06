@@ -244,7 +244,7 @@ def employee_task(request, id):
     }
     if request.method == "POST":
         start = request.POST.get('start_month')
-        start_year, start_month, _ = str(start).split('-')
+        start_year, start_month = str(start).split('-')
         for month_obj in Month.objects.all():
             if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
                 month_id = month_obj.id
@@ -420,9 +420,9 @@ def employee_time(request, id):
             # if current month and employee in assignments are right sum the percentages
             for assignment_per_month in assignments_per_month:
                 if assignment_per_month.employee == employee and assignment_per_month.month == month:
-                    sum += int(round(assignment_per_month.percentage, 2) * 100)
+                    sum += assignment_per_month.percentage
             # append the current sum value to list
-            tasks_sum.append(sum)
+            tasks_sum.append(int(round(sum, 2) * 100))
         # Slice list to only have 12 entries
         tasks_sum = tasks_sum[(id - 1):(id + 11)]
         # append list to other lists
@@ -481,7 +481,7 @@ def task_time(request, id):
     }
     if request.method == "POST":
         start = request.POST.get('start_month')
-        start_year, start_month, _ = str(start).split('-')
+        start_year, start_month = str(start).split('-')
         for month_obj in Month.objects.all():
             if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
                 month_id = month_obj.id

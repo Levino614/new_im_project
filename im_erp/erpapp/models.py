@@ -1,3 +1,4 @@
+import datetime
 from django.db import models
 from django.utils import timezone
 
@@ -18,14 +19,7 @@ class Month(models.Model):
         ('November', 'November'),
         ('December', 'December')
     ]
-    year_choices = [
-        ('2020', '2020'),
-        ('2021', '2021'),
-        ('2022', '2022'),
-        ('2023', '2023'),
-        ('2024', '2024'),
-        ('2025', '2025')
-    ]
+    year_choices = [(r, r) for r in range(datetime.date.today().year-10, datetime.date.today().year+10)]
     month = models.CharField(max_length=10, choices=month_choices)
     year = models.CharField(max_length=5, choices=year_choices, default=str(timezone.now().strftime('%Y')))
 
