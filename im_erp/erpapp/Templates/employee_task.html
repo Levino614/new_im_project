@@ -90,17 +90,17 @@
                                 {% if employee_info.3 > 1.0 %}
                                     <td>
                                         <a href="/employee" style="color: #000000; background-color: #ff726f">{{ employee_info.0 }}</a>
-                                        <a href="/edit_emp/{{ employee_info.0.id }}" class="btn btn-primary btn-xs"></a><span class="glyphicon glyphicon-pencil"></span>
+                                        <a href="/edit_emp/{{ employee_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
                                     </td>
                                 {% elif employee_info.3 > 0.8 %}
                                     <td>
                                         <a href="/employee" style="color: #000000; background-color: #ffc966">{{ employee_info.0 }}</a>
-                                        <a href="/edit_emp/{{ employee_info.0.id }}" class="btn btn-primary btn-xs"></a><span class="glyphicon glyphicon-pencil"></span>
+                                        <a href="/edit_emp/{{ employee_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
                                     </td>
                                 {% else %}
                                     <td>
                                         <a href="/employee" style="color: #000000; background-color:#90ee90">{{ employee_info.0 }}</a>
-                                        <a href="/edit_emp/{{ employee_info.0.id }}" class="btn btn-primary btn-xs"></a><span class="glyphicon glyphicon-pencil"></span>
+                                        <a href="/edit_emp/{{ employee_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
                                     </td>
                                 {% endif %}
                                 <td style="text-align: left">{{ employee_info.1 }}% ({{ employee_info.2 }}%)</td>
