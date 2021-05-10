@@ -13,13 +13,14 @@
     <form method="POST" class="post-form">
             {% csrf_token %}
         <div class="form-group row">
-            <label class="col-sm-2 col-form-label">Choose start month</label>
+            <label class="col-sm-2 col-form-label">Choose start month:</label>
             <div class="col-sm-4">
                 <input type="month" name="start_month" id="start_month" class="form-control">
                 <input type="submit" class="btn btn-primary">
             </div>
         </div>
     </form>
+</div>
 <div class="row">
     <div class="col-3">
         <h3>Assignments for: </h3>
@@ -31,17 +32,15 @@
             </div>
             <div class="col-3">
                 <div class="btn-group" role="group" aria-label="Basic example">
-                    <a class="btn btn-primary btn-sm" href="/employee_task/{{ previous_month.id }}" role="button"><</a>
+                    <a class="btn btn-primary btn-sm" href="{{ previous_month.id }}" role="button"><</a>
                     <a class="btn btn-primary btn-sm" href="{{ today.id }}" role="button">Today</a>
                     <a class="btn btn-primary btn-sm" href="{{ next_month.id }}" role="button">></a>
                 </div>
             </div>
-
         </div>
     </div>
+</div>
 
-</div>
-</div>
 <div class="row">
     <!-- Nested Table -->
     <table>

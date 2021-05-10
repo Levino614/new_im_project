@@ -324,10 +324,22 @@ def employee_time(request, id):
         assignments_sums.append(tasks_sum)
 
     months = months[(id - 1):(id + 11)]
+
+    date = timezone.now()
+    current_year, current_month, _ = str(date).split('-')
+    current_month_name = month_dict[str(int(current_month))]
+    today = Month.objects.get(month=current_month_name, year=current_year)
+    previous_month = Month.objects.get(id=id - 1)
+    next_month = Month.objects.get(id=id + 1)
+    month = Month.objects.get(id=id)
     context = {
         'months': months,
         'assignments': assignments_sums,
         'employees': employees,
+        'today': today,
+        'previous_month': previous_month,
+        'next_month': next_month,
+        'month': month
     }
     return render(request, 'employee_time.html', context)
 
@@ -395,10 +407,21 @@ def task_time(request, id):
         assignment_sums.append(employees_sum)
     months = months[(id - 1):(id + 11)]
 
+    date = timezone.now()
+    current_year, current_month, _ = str(date).split('-')
+    current_month_name = month_dict[str(int(current_month))]
+    today = Month.objects.get(month=current_month_name, year=current_year)
+    previous_month = Month.objects.get(id=id - 1)
+    next_month = Month.objects.get(id=id + 1)
+    month = Month.objects.get(id=id)
     context = {
         'months': months,
         'assignments': assignment_sums,
-        'tasks': tasks
+        'tasks': tasks,
+        'today': today,
+        'previous_month': previous_month,
+        'next_month': next_month,
+        'month': month,
     }
     return render(request, 'task_time.html', context)
 
@@ -637,6 +660,18 @@ def edit_chair(request, id):
 
 def edit_ass(request, id):
     assignment = Assignment.objects.get(id=id)
+    # Revision restriction
+    '''
+    if request.method == 'POST':
+        print('Ich glaub das geht hier nicht')
+        date_format = "%Y-%m-%d"
+        start = request.POST.get('start')
+        start = datetime.strptime(start, date_format)
+        today = datetime.today()
+        if start > today:
+            messages.error(request, "Cannot update Assignments in past months")
+            return redirect('/task_time/{}'.format(id))
+    '''
     context = {
         'assignment': assignment
     }
