@@ -19,7 +19,7 @@ class Month(models.Model):
         ('November', 'November'),
         ('December', 'December')
     ]
-    year_choices = [(r, r) for r in range(datetime.date.today().year-10, datetime.date.today().year+10)]
+    year_choices = [(str(r), str(r)) for r in range(datetime.date.today().year-10, datetime.date.today().year+10)]
     month = models.CharField(max_length=10, choices=month_choices)
     year = models.CharField(max_length=5, choices=year_choices, default=str(timezone.now().strftime('%Y')))
 
@@ -59,7 +59,7 @@ class Employee(models.Model):
 
 class Task(models.Model):
     title = models.CharField('Title', max_length=50, default='Title')
-    description = models.CharField('description', max_length=2400, default='Describe the task!')
+    description = models.CharField('Description', max_length=2400, default='Describe the task!')
     assigned_employees_on_month = models.ManyToManyField(Employee, through='AssignmentPerMonth')
 
     def __str__(self):
@@ -130,6 +130,7 @@ class Assignment(models.Model):
     end = models.DateField('To', default=timezone.now())
     percentage = models.FloatField('Functional Capacity', default=0.2)
     responsibility = models.BooleanField('Responsible', default=False)
+    comment = models.CharField('Comment', max_length=2400, default='')
 
     def __str__(self):
         return '{} --({})-> {}'.format(self.employee, self.percentage, self.task)
