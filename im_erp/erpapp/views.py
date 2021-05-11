@@ -660,18 +660,7 @@ def edit_chair(request, id):
 
 def edit_ass(request, id):
     assignment = Assignment.objects.get(id=id)
-    # Revision restriction
-    '''
-    if request.method == 'POST':
-        print('Ich glaub das geht hier nicht')
-        date_format = "%Y-%m-%d"
-        start = request.POST.get('start')
-        start = datetime.strptime(start, date_format)
-        today = datetime.today()
-        if start > today:
-            messages.error(request, "Cannot update Assignments in past months")
-            return redirect('/task_time/{}'.format(id))
-    '''
+
     context = {
         'assignment': assignment
     }
@@ -744,6 +733,16 @@ def update_ass(request, id):
             responsibility = form.data['responsibility']
         except:
             responsibility = False
+
+        # Restriction: User shall not be able to edit past assignments
+        date_format = "%Y-%m-%d"
+        start = form.data['start']
+        start = datetime.strptime(start, date_format)
+        today = datetime.today()
+        if start < today:
+            messages.error(request, "Cannot update Assignments in past months.")
+            return redirect('/edit_ass/{}'.format(id))
+
 
         month_dict = {
             '1': 'January',
