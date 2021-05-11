@@ -8,7 +8,6 @@ from django.contrib import messages
 from erpapp.models import Employee, Project, Position, Chair, Assignment, Task, Month, AssignmentPerMonth
 
 
-# Create your views here.
 def index(request):
     employees = Employee.objects.all()
     projects = Project.objects.all()
