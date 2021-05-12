@@ -34,10 +34,10 @@
         </tr>
         </thead>
         <tbody>
-        {% for task_info in tasks_in_months %}
+        {% for emp_info in emps_in_months %}
             <tr>
-                <td> {{ task_info.0 }} </td>
-            {% for assignment in task_info.1 %}
+                <td> {{ emp_info.0 }} </td>
+            {% for assignment in emp_info.1 %}
                 <td> {{ assignment }} </td>
             {% endfor %}
             </tr>

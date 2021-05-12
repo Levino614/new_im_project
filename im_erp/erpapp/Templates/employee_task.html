@@ -82,15 +82,15 @@
             <th style="text-align: right">Employee</th>
             <th style="text-align: left">∑ / (Capacity)</th>
             {% for project in projects %}
-            <th class="col-xs-1" style="text-align: center"><a href="/edit_proj/{{ project.id }}"
+            <th class="col-xs-1" style="text-align: center"><a href="/task_in_months/{{ project.id }}"
                                                                style="color: #000000">P{{ project.id }}</a></th>
             {% endfor %}
             {% for chair in chairs %}
-            <th class="col-xs-1" style="text-align: center"><a href="/tasks" style="color: #000000">c{{ chair.id }}</a>
+            <th class="col-xs-1" style="text-align: center"><a href="/task_in_months/{{ project.id }}" style="color: #000000">c{{ chair.id }}</a>
             </th>
             {% endfor %}
             {% for position in positions %}
-            <th class="col-xs-1" style="text-align: center"><a href="/tasks"
+            <th class="col-xs-1" style="text-align: center"><a href="/task_in_months/{{ project.id }}"
                                                                style="color: #000000">p{{ position.id }}</a></th>
             {% endfor %}
         </tr>

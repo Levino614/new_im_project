@@ -52,5 +52,7 @@ urlpatterns = [
     path('test/', views.test),
     path('employee_in_months/<int:emp_id>/', views.employee_in_months_no_id),
     path('employee_in_months/<int:emp_id>/<int:month_id>', views.employee_in_months),
+    path('task_in_months/<int:tsk_id>/', views.task_in_months_no_id),
+    path('task_in_months/<int:tsk_id>/<int:month_id>', views.task_in_months),
     path('test/<int:id>', views.test),
 ]
