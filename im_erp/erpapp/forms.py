@@ -67,7 +67,8 @@ class AssignmentForm(forms.ModelForm):
                    'task': forms.Select(attrs={'class': 'form-control'}),
                    'start': forms.DateInput(attrs={'class': 'form-control'}),
                    'end': forms.DateInput(attrs={'class': 'form-control'}),
-                   'percentage': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'max': 1.0, 'min': 0.0}),
+                   'percentage': forms.NumberInput(
+                       attrs={'class': 'form-control', 'step': '0.01', 'max': 1.0, 'min': 0.0}),
                    'responsibility': forms.NullBooleanSelect(attrs={'class': 'form-control'}),
                    'comment': forms.TextInput(attrs={'class': 'form-control'}),
                    }
