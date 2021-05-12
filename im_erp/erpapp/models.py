@@ -19,7 +19,7 @@ class Month(models.Model):
         ('November', 'November'),
         ('December', 'December')
     ]
-    year_choices = [(str(r), str(r)) for r in range(datetime.date.today().year-10, datetime.date.today().year+10)]
+    year_choices = [(str(r), str(r)) for r in range(datetime.date.today().year - 10, datetime.date.today().year + 10)]
     month = models.CharField(max_length=10, choices=month_choices)
     year = models.CharField(max_length=5, choices=year_choices, default=str(timezone.now().strftime('%Y')))
 

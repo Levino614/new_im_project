@@ -145,7 +145,7 @@ def employee_task(request, id):
             for assignment_per_month in assignments_per_months:
                 if assignment_per_month.task.id == project.id and assignment_per_month.employee.id == employee.id and assignment_per_month.month == month:
                     employee_prj_hours.append(
-                        (int(round(assignment_per_month.percentage, 2) * 100), assignment_per_month.id, #hier!!!
+                        (int(round(assignment_per_month.percentage, 2) * 100), assignment_per_month.id,  # hier!!!
                          assignment_per_month.responsibility))
                     employee_prj_hours_id.append(project.id)
         employee_list_project = []
@@ -763,7 +763,6 @@ def update_ass(request, id):
         if start < today:
             messages.error(request, "Cannot update Assignments in past months.")
             return redirect('/edit_ass/{}'.format(id))
-
 
         month_dict = {
             '1': 'January',
