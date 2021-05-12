@@ -10,6 +10,7 @@
 }
 
 
+
 </style>
 <!-- Select Month form -->
 <div class="row">
@@ -81,16 +82,16 @@
             <th style="text-align: right">Employee</th>
             <th style="text-align: left">∑ / (Capacity)</th>
             {% for project in projects %}
-            <th class="col-xs-1" style="text-align: center"><a href="/tasks" style="color: #000000">P{{ project.id
-                }}</a></th>
+            <th class="col-xs-1" style="text-align: center"><a href="/edit_proj/{{ project.id }}"
+                                                               style="color: #000000">P{{ project.id }}</a></th>
             {% endfor %}
             {% for chair in chairs %}
             <th class="col-xs-1" style="text-align: center"><a href="/tasks" style="color: #000000">c{{ chair.id }}</a>
             </th>
             {% endfor %}
             {% for position in positions %}
-            <th class="col-xs-1" style="text-align: center"><a href="/tasks" style="color: #000000">p{{ position.id
-                }}</a></th>
+            <th class="col-xs-1" style="text-align: center"><a href="/tasks"
+                                                               style="color: #000000">p{{ position.id }}</a></th>
             {% endfor %}
         </tr>
         </thead>
@@ -119,17 +120,18 @@
 
             {% for employeet in employeetask %}
             {% if employeet.0 == '-' %}
-            <td style="text-align: center"><a href="/add_new_ass/" style="color:#000000">{{ employeet.0 }}</a></td>
+            <td style="text-align: center"><a href="/add_new_ass/"
+                                              style="color:#000000">{{ employeet.0 }}</a></td>
             {% else %}
             {% if employeet.2 %}
             <td style="text-align: center">
-                <a href="/edit_ass/{{ employeet.1 }}" style="color: #000000; background-color: #ffff94">{{ employeet.0
-                    }}%</a>
+                <a href="/edit_ass/{{ employeet.1 }}"
+                   style="color: #000000; background-color: #ffff94">{{ employeet.0 }}%</a>
             </td>
             {% else %}
             <td style="text-align: center">
-                <a href="/edit_ass/{{ employeet.1 }}" style="color: #000000; background-color: #add8e6">{{ employeet.0
-                    }}%</a>
+                <a href="/edit_ass/{{ employeet.1 }}"
+                   style="color: #000000; background-color: #add8e6">{{ employeet.0 }}%</a>
             </td>
             {% endif %}
             {% endif %}
@@ -146,15 +148,15 @@
             {% for task_sum in tasks_sum %}
             {% if task_sum.2 > 1.0 %}
             <td style="text-align: center">
-                <div style="background-color: #ff726f">{{ task_sum.0 }}%</div>
+                <div style="background-color: #ff726f">{{ task_sum.0 }}</div>
             </td>
             {% elif task_sum.2 > 0.8 %}
             <td style="text-align: center">
-                <div style="background-color: #ffc966">{{ task_sum.0 }}%</div>
+                <div style="background-color: #ffc966">{{ task_sum.0 }}</div>
             </td>
             {% else %}
             <td style="text-align: center">
-                <div style="background-color: #90ee90">{{ task_sum.0 }}%</div>
+                <div style="background-color: #90ee90">{{ task_sum.0 }}</div>
             </td>
             {% endif %}
             {% endfor %}

@@ -254,12 +254,13 @@ def employee_task(request, id):
     return render(request, 'employee_task.html', context)
 
 
-def employee_in_months(request):
+def employee_in_months(request, id):
     # data for one employee
     employee = Employee.objects.get(id=1)
-    position_in_months = []
-    chair_in_months = []
+    months = Month.objects.all()
     tasks_in_months = []
+
+    allmonths = []
 
     # COLLECT DATA FOR PROJECTS FOR THIS EMPLOYEE
     for project in Project.objects.all():
@@ -311,8 +312,13 @@ def employee_in_months(request):
             i = i + 1
     tasks_in_months.append(allmonths)
     print("list: ", tasks_in_months)
-
-    return render(request, 'employee_in_months.html')
+    tasks_in_month = [['P1', [0.0, 0.2, 0.5]], ['P2', [0.4, 0.7, 0.8]], ['P3', [0.0, 0.0, 0.0]]]
+    context = {
+        'employee': employee,
+        'tasks_in_month': tasks_in_month,
+        'months': months,
+    }
+    return render(request, 'employee_in_months.html', context)
 
 
 def employee_time_no_id(request):
