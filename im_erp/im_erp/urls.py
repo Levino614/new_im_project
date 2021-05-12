@@ -49,5 +49,6 @@ urlpatterns = [
     path('delete_chair/<int:id>', views.delete_chair),
     path('delete_ass/<int:id>', views.delete_ass),
     path('admin/', admin.site.urls),
-    path('test/', views.test)
+    path('test/', views.test),
+    path('employee_in_months/', views.employee_in_months)
 ]

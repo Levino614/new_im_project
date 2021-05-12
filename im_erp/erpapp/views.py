@@ -146,7 +146,7 @@ def employee_task(request, id):
             for assignment_per_month in assignments_per_months:
                 if assignment_per_month.task.id == project.id and assignment_per_month.employee.id == employee.id and assignment_per_month.month == month:
                     employee_prj_hours.append(
-                        (int(round(assignment_per_month.percentage, 2) * 100), assignment_per_month.id,
+                        (int(round(assignment_per_month.percentage, 2) * 100), assignment_per_month.id, #hier!!!
                          assignment_per_month.responsibility))
                     employee_prj_hours_id.append(project.id)
         employee_list_project = []
@@ -253,6 +253,63 @@ def employee_task(request, id):
         'today': today,
     }
     return render(request, 'employee_task.html', context)
+
+def employee_in_months(request):
+    # data for one employee
+    employee = Employee.objects.get(id = 1)
+    position_in_months = []
+    chair_in_months = []
+    tasks_in_months = []
+
+    # COLLECT DATA FOR PROJECTS FOR THIS EMPLOYEE
+    for project in Project.objects.all():
+        #collect all months
+        allmonths = []
+        for month in Month.objects.all():
+            allmonths.append([month,0.0])
+        # loop through all months and set their [1] to the percentage of the assignment
+        i = 0
+        for month in allmonths:
+            for assignment_per_month in AssignmentPerMonth.objects.all():
+                if project.id == assignment_per_month.task.id and assignment_per_month.employee.id == employee.id and month[0] == assignment_per_month.month:
+                    allmonths[i][1] = assignment_per_month.percentage
+            i = i + 1
+
+        tasks_in_months.append(allmonths)
+
+    # COLLECT DATA FOR POSTIONS FOR THIS EMPLOYEE
+    for position in Position.objects.all():
+        #collect all months
+        allmonths = []
+        for month in Month.objects.all():
+            allmonths.append([month, 0.0])
+        # loop through all months and set their [1] to the percentage of the assignment
+        i = 0
+        for month in allmonths:
+            for assignment_per_month in AssignmentPerMonth.objects.all():
+                if position.id == assignment_per_month.task.id and assignment_per_month.employee.id == employee.id and month[0] == assignment_per_month.month:
+                    allmonths[i][1] = assignment_per_month.percentage
+            i = i + 1
+
+        tasks_in_months.append(allmonths)
+
+    # COLLECT DATA FOR CHAIRS FOR THIS EMPLOYEE
+    for chair in Chair.objects.all():
+        # collect all months
+        allmonths = []
+        for month in Month.objects.all():
+            allmonths.append([month,0.0])
+        # loop through all months and set their [1] to the percentage of the assignment
+        i = 0
+        for month in allmonths:
+            for assignment_per_month in AssignmentPerMonth.objects.all():
+                if chair.id == assignment_per_month.task.id and assignment_per_month.employee.id == employee.id and month[0] == assignment_per_month.month:
+                    allmonths[i][1] = assignment_per_month.percentage
+            i = i + 1
+    tasks_in_months.append(allmonths)
+    print("list: ", tasks_in_months)
+
+    return render(request, 'employee_in_months.html')
 
 
 def employee_time_no_id(request):
