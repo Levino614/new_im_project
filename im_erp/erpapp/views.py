@@ -235,8 +235,14 @@ def employee_task(request, id):
     current_year, current_month, _ = str(date).split('-')
     current_month_name = month_dict[str(int(current_month))]
     today = Month.objects.get(month=current_month_name, year=current_year)
-    previous_month = Month.objects.get(id=id-1)
-    next_month = Month.objects.get(id=id+1)
+    try:
+        previous_month = Month.objects.get(id=id - 1)
+    except Exception:
+        previous_month = Month.objects.get(id=id)
+    try:
+        next_month = Month.objects.get(id=id + 1)
+    except Exception:
+        next_month = Month.objects.get(id=id)
     context = {
         'employees': employees,
         'assignments': Assignment.objects.all(),
@@ -254,24 +260,77 @@ def employee_task(request, id):
     return render(request, 'employee_task.html', context)
 
 
-def employee_in_months(request, id):
+def employee_in_months_no_id(request, emp_id):
+    date = timezone.now()
+    current_year, current_month, _ = str(date).split('-')
+    month_dict = {
+        '1': 'January',
+        '2': 'February',
+        '3': 'March',
+        '4': 'April',
+        '5': 'May',
+        '6': 'June',
+        '7': 'July',
+        '8': 'August',
+        '9': 'September',
+        '10': 'October',
+        '11': 'November',
+        '12': 'December',
+    }
+    month_name = month_dict[str(int(current_month))]
+    month = Month.objects.get(month=month_name, year=current_year)
+    return redirect('/employee_in_months/{}/{}'.format(emp_id, month.id))
+
+
+def employee_in_months(request, emp_id, month_id):
     # data for one employee
-    employee = Employee.objects.get(id=1)
+    employee = Employee.objects.get(id=emp_id)
     months = Month.objects.all()
     tasks_in_months = []
 
     for task in Task.objects.all():
-        allmonths = [task.title]
+        task_info = [task.title]
+        assignments = []
         for month in Month.objects.all():
-            allmonths.append('-')
-        #iterate through all months
+            assignments.append('-')
+        # iterate through all months
         i = 0
         for month in Month.objects.all():
-            for assignment_per_months in AssignmentPerMonth.objects.all(): #set assignment_percentages to right month
+            for assignment_per_months in AssignmentPerMonth.objects.all():  # set assignment_percentages to right month
                 if task.id == assignment_per_months.task.id and employee.id == assignment_per_months.employee.id and month == assignment_per_months.month:
-                    allmonths[i+1] = assignment_per_months.percentage
+                    assignments[i] = assignment_per_months.percentage
             i = i + 1
-        tasks_in_months.append(allmonths)
+        task_info.append(assignments[month_id-1:month_id+11])
+        tasks_in_months.append(task_info)
+    months = months[month_id-1:month_id+11]
+
+    month_dict = {
+        '1': 'January',
+        '2': 'February',
+        '3': 'March',
+        '4': 'April',
+        '5': 'May',
+        '6': 'June',
+        '7': 'July',
+        '8': 'August',
+        '9': 'September',
+        '10': 'October',
+        '11': 'November',
+        '12': 'December',
+    }
+    month = Month.objects.get(id=month_id)
+    date = timezone.now()
+    current_year, current_month, _ = str(date).split('-')
+    current_month_name = month_dict[str(int(current_month))]
+    today = Month.objects.get(month=current_month_name, year=current_year)
+    try:
+        previous_month = Month.objects.get(id=month_id - 1)
+    except Exception:
+        previous_month = Month.objects.get(id=month_id)
+    try:
+        next_month = Month.objects.get(id=month_id + 1)
+    except Exception:
+        next_month = Month.objects.get(id=month_id)
 
     print("list: ", tasks_in_months)
 
@@ -279,6 +338,10 @@ def employee_in_months(request, id):
         'employee': employee,
         'tasks_in_months': tasks_in_months,
         'months': months,
+        'month': month,
+        'previous_month': previous_month,
+        'next_month': next_month,
+        'today': today,
     }
     return render(request, 'employee_in_months.html', context)
 

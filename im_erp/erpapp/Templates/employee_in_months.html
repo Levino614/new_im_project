@@ -2,28 +2,6 @@
 {% block title %}SmartRnD - Employee/Task{% endblock title %}
 
 {% block content %}
-<!-- Color Keys Style Sheet -->
-<style>
-    #rectangle{
-    width:20px;
-    height:20px;
-}
-
-
-</style>
-<!-- Select Month form -->
-<div class="row">
-    <form method="POST" class="post-form">
-        {% csrf_token %}
-        <div class="form-group row">
-            <label class="col-sm-2 col-form-label">Choose start month:</label>
-            <div class="col-sm-4">
-                <input type="month" name="start_month" id="start_month" class="form-control">
-                <input type="submit" class="btn btn-primary">
-            </div>
-        </div>
-    </form>
-</div>
 <!-- Heading and month switcher <- today -> -->
 <div class="row">
     <div class="col-3">
@@ -47,34 +25,6 @@
 <!-- Table -->
 <div class="row">
     <table class="table table-striped table-bordered table-light" width="100%">
-        <!-- Color Key -->
-        <caption>
-            <h4>Color Key:</h4>
-            <div class="col-6">
-                <div class="row">
-                    <div class="col-1" id="red" style="background-color: #ff726f"></div>
-                    <div class="col-11">: Employee Workload > 100%</div>
-                </div>
-                <div class="row">
-                    <div class="col-1" id="orange" style="background-color: #ffc966"></div>
-                    <div class="col-11">: Employee Workload > 80%</div>
-                </div>
-                <div class="row">
-                    <div class="col-1" id="green" style="background-color: #90ee90"></div>
-                    <div class="col-11">: Employee Workload ≤ 80%</div>
-                </div>
-            </div>
-            <div class="col-6">
-                <div class="row">
-                    <div class="col-1" id="yellow" style="background-color: #ffff94"></div>
-                    <div class="col-11">: Employee is responsible</div>
-                </div>
-                <div class="row">
-                    <div class="col-1" id="blue" style="background-color: #add8e6"></div>
-                    <div class="col-11">: Employee is not responsible</div>
-                </div>
-            </div>
-        </caption>
         <thead>
         <tr>
             <th style="text-align: right">{{ employee }}</th>
@@ -84,9 +34,10 @@
         </tr>
         </thead>
         <tbody>
-        {% for task in tasks_in_months %}
+        {% for task_info in tasks_in_months %}
             <tr>
-            {% for assignment in task %}
+                <td> {{ task_info.0 }} </td>
+            {% for assignment in task_info.1 %}
                 <td> {{ assignment }} </td>
             {% endfor %}
             </tr>

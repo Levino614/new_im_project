@@ -50,6 +50,7 @@ urlpatterns = [
     path('delete_ass/<int:id>', views.delete_ass),
     path('admin/', admin.site.urls),
     path('test/', views.test),
-    path('employee_in_months/<int:id>', views.employee_in_months),
+    path('employee_in_months/<int:emp_id>/', views.employee_in_months_no_id),
+    path('employee_in_months/<int:emp_id>/<int:month_id>', views.employee_in_months),
     path('test/<int:id>', views.test),
 ]
