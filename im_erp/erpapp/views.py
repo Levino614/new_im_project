@@ -101,164 +101,70 @@ def employee_task_no_id(request):
 
 
 def employee_task(request, id):
-    employees = Employee.objects.all()
-    assignments_per_months = AssignmentPerMonth.objects.all()
-    projects = Project.objects.all()
-    chairs = Chair.objects.all()
-    positions = Position.objects.all()
-    tasks = Task.objects.all()
-    employee_tasks = []
-    employee_chairs_tasks = []
-    employee_positions_tasks = []
-    tasks_sum = []
 
-    month_dict = {
-        '1': 'January',
-        '2': 'February',
-        '3': 'March',
-        '4': 'April',
-        '5': 'May',
-        '6': 'June',
-        '7': 'July',
-        '8': 'August',
-        '9': 'September',
-        '10': 'October',
-        '11': 'November',
-        '12': 'December',
-    }
-    if request.method == "POST":
-        start = request.POST.get('start_month')
-        start_year, start_month = str(start).split('-')
-        for month_obj in Month.objects.all():
-            if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
-                month_id = month_obj.id
-                return redirect('/employee_task/{}'.format(month_id))
-        return redirect('/employee_task/')
+    month = Month.objects.get(id=21)
+    print("month: ", month)
+    #list for all employees
+    tasks_percentages = []
 
-    month = Month.objects.get(id=id)
+    #create a list for each employee
+    for employee in Employee.objects.all():
 
-    # Loop through Project Tasks
-    for employee in employees:
-        employee_prj_hours = []
-        employee_prj_hours_id = []
-        for project in projects:
-            for assignment_per_month in assignments_per_months:
-                if assignment_per_month.task.id == project.id and assignment_per_month.employee.id == employee.id and assignment_per_month.month == month:
-                    employee_prj_hours.append(
-                        (int(round(assignment_per_month.percentage, 2) * 100), assignment_per_month.id,  # hier!!!
-                         assignment_per_month.responsibility))
-                    employee_prj_hours_id.append(project.id)
-        employee_list_project = []
-        for project in projects:
-            if project.id in employee_prj_hours_id:
-                employee_list_project.append(employee_prj_hours[employee_prj_hours_id.index(project.id)])
-            else:
-                employee_list_project.append('-')
-        employee_tasks.append(employee_list_project)
-
-    # Loop through Chair Tasks
-    for employee in employees:
-        employee_ch_hours = []
-        employee_ch_hours_id = []
-        for chair in chairs:
-            for assignment_per_months in assignments_per_months:
-                if assignment_per_months.task.id == chair.id and assignment_per_months.employee.id == employee.id and assignment_per_months.month == month:
-                    employee_ch_hours.append(
-                        (int(round(assignment_per_months.percentage, 2) * 100), assignment_per_months.id,
-                         assignment_per_months.responsibility))
-                    employee_ch_hours_id.append(chair.id)
-        employee_list_chair = []
-        for chair in chairs:
-            if chair.id in employee_ch_hours_id:
-                employee_list_chair.append(employee_ch_hours[employee_ch_hours_id.index(chair.id)])
-            else:
-                employee_list_chair.append('-')
-        employee_chairs_tasks.append(employee_list_chair)
-    i = 0
-    # And append information to list
-    while i < len(employee_tasks):
-        j = 0
-        while j < len(employee_chairs_tasks[i]):
-            employee_tasks[i].append(employee_chairs_tasks[i][j])
-            j = j + 1
-        i = i + 1
-
-    # Loop through Position Tasks
-    for employee in employees:  # For Project start
-        employee_pos_hours = []
-        employee_pos_hours_id = []
-        for position in positions:
-            for assignment_per_months in assignments_per_months:
-                if assignment_per_months.task.id == position.id and assignment_per_months.employee.id == employee.id and assignment_per_months.month == month:
-                    employee_pos_hours.append(
-                        (int(round(assignment_per_months.percentage, 2) * 100), assignment_per_months.id,
-                         assignment_per_months.responsibility))
-                    employee_pos_hours_id.append(position.id)
-        employee_list_position = []
-        for position in positions:
-            if position.id in employee_pos_hours_id:
-                employee_list_position.append(employee_pos_hours[employee_pos_hours_id.index(position.id)])
-            else:
-                employee_list_position.append('-')
-        employee_positions_tasks.append(employee_list_position)
-    ii = 0
-    # And append information to list
-    while ii < len(employee_tasks):
-        jj = 0
-        while jj < len(employee_positions_tasks[ii]):
-            employee_tasks[ii].append(employee_positions_tasks[ii][jj])
-            jj = jj + 1
-        ii = ii + 1
-
-    # Used ressources, summed up for each project
-    for project in projects:
-        sum = 0
-        for assignment_per_months in assignments_per_months:
-            if assignment_per_months.task.id == project.id and assignment_per_months.month == month:
-                sum += assignment_per_months.percentage
-
-        tasks_sum.append(int(round(sum, 2) * 100))
-
-    # Append (employee, workload)-Tuple employee_infos list
-    employee_infos = []
-    for employee in employees:
+        #employee info
         employee_sum = 0
-        for task in tasks:
-            for assignment in Assignment.objects.all():
-                if assignment.task.id == task.id and assignment.employee.id == employee.id:
-                    employee_sum += assignment.percentage
-        workload = employee_sum / employee.capacity
-        employee_infos.append(
-            (employee, int(round(employee_sum, 2) * 100), int(round(employee.capacity, 2) * 100), workload))
+        #look through all assignments for all tasks for one emoloyee
+        for task in Task.objects.all():
+            for assignment_per_month in AssignmentPerMonth.objects.all():
+                # if assignment in month exists add percentage to sum
+                if employee.id == assignment_per_month.employee.id and task.id == assignment_per_month.task.id and month == assignment_per_month.month:
+                    employee_sum = employee_sum + assignment_per_month.percentage
+        print("sum: ", employee_sum)
+        # get capacity and calculate workload
+        employee_capacity = employee.capacity
+        employee_worklooad = employee_sum / employee_capacity
 
-    date = timezone.now()
-    current_year, current_month, _ = str(date).split('-')
-    current_month_name = month_dict[str(int(current_month))]
-    today = Month.objects.get(month=current_month_name, year=current_year)
-    try:
-        previous_month = Month.objects.get(id=id - 1)
-    except Exception:
-        previous_month = Month.objects.get(id=id)
-    try:
-        next_month = Month.objects.get(id=id + 1)
-    except Exception:
-        next_month = Month.objects.get(id=id)
+        #attach these infos to first element in list for each employee
+        employee_title = [(employee.fullname,employee_sum,employee_capacity, employee_worklooad)]
+
+        #employee_info ending
+
+        #get a list with '-' for every task
+        tasks_zero = []
+        for task in Task.objects.all():
+            tasks_zero.append('-')
+        # go through all task and see if employee is assigned in selected month
+        i = 0
+        for task in Task.objects.all():
+            for assignment_per_month in AssignmentPerMonth.objects.all():
+                # if yes set tasks_zero on index to percentage of the assignment and increase i
+                if employee.id == assignment_per_month.employee.id and task.id == assignment_per_month.task.id and month == assignment_per_month.month:
+                    tasks_zero[i] = assignment_per_month.percentage
+            i = i + 1
+        # append to list with employee_infos in the first element
+        employee_title.append(tasks_zero)
+        # append to list for all employees
+        tasks_percentages.append(employee_title)
+    print("list: ", tasks_percentages)
+
+    # get all percentages sums for all tasks
+    # go through all tasks
+    task_sums = []
+    for task in Task.objects.all():
+        task_sum = 0
+        for assignment_per_month in AssignmentPerMonth.objects.all():
+            # if task has assignment in selected month add percentage to sum
+            if assignment_per_month.task.id == task.id and assignment_per_month.month == month:
+                task_sum = task_sum + assignment_per_month.percentage
+        task_sums.append(task_sum)
+    print("task_sum: ", task_sums)
+
     context = {
-        'employees': employees,
-        'assignments': Assignment.objects.all(),
-        'projects': projects,
-        'chairs': chairs,
-        'positions': positions,
-        'employeetasks': employee_tasks,
-        'tasks_sum': tasks_sum,
-        'employee_infos': employee_infos,
-        'month': month,
-        'previous_month': previous_month,
-        'next_month': next_month,
-        'today': today,
+       'tasks_percentages' : tasks_percentages,
+        'task_sums' : task_sums
     }
-    return render(request, 'employee_task.html', context)
 
+
+    return render(request, 'employee_task.html', context)
 
 def employee_in_months_no_id(request, emp_id):
     date = timezone.now()
