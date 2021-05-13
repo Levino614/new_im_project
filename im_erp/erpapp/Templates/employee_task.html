@@ -46,122 +46,108 @@
     </div>
 </div>
 <!-- Table -->
-<div class="row">
-    <!-- Nested Table -->
-    <table class="table table-striped table-bordered table-light" width="100%">
-        <!-- Color Key -->
-        <caption>
-            <h4>Color Key:</h4>
-            <div class="col-6">
-                <div class="row">
-                    <div class="col-1" id="red" style="background-color: #ff726f"></div>
-                    <div class="col-11">: Employee Workload > 100%</div>
+<div class="col-12">
+    <div class="row">
+        <!-- Nested Table -->
+        <table class="table table-responsive table-striped table-bordered table-light" width="100%" style="table-layout: auto">
+            <!-- Color Key -->
+            <caption>
+                <h4>Color Key:</h4>
+                <div class="col-6">
+                    <div class="row">
+                        <div class="col-1" id="red" style="background-color: #ff726f"></div>
+                        <div class="col-11">: Employee Workload > 100%</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-1" id="orange" style="background-color: #ffc966"></div>
+                        <div class="col-11">: Employee Workload > 80%</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-1" id="green" style="background-color: #90ee90"></div>
+                        <div class="col-11">: Employee Workload ≤ 80%</div>
+                    </div>
                 </div>
-                <div class="row">
-                    <div class="col-1" id="orange" style="background-color: #ffc966"></div>
-                    <div class="col-11">: Employee Workload > 80%</div>
+                <div class="col-6">
+                    <div class="row">
+                        <div class="col-1" id="yellow" style="background-color: #ffff94"></div>
+                        <div class="col-11">: Employee is responsible</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-1" id="blue" style="background-color: #add8e6"></div>
+                        <div class="col-11">: Employee is not responsible</div>
+                    </div>
                 </div>
-                <div class="row">
-                    <div class="col-1" id="green" style="background-color: #90ee90"></div>
-                    <div class="col-11">: Employee Workload ≤ 80%</div>
-                </div>
-            </div>
-            <div class="col-6">
-                <div class="row">
-                    <div class="col-1" id="yellow" style="background-color: #ffff94"></div>
-                    <div class="col-11">: Employee is responsible</div>
-                </div>
-                <div class="row">
-                    <div class="col-1" id="blue" style="background-color: #add8e6"></div>
-                    <div class="col-11">: Employee is not responsible</div>
-                </div>
-            </div>
-        </caption>
-        <thead>
-        <tr>
-            <th style="text-align: right">Employee</th>
-            <th style="text-align: left">∑ / (Capacity)</th>
-            {% for project in projects %}
-            <th class="col-xs-1" style="text-align: center"><a href="/task_in_months/{{ project.id }}"
-                                                               style="color: #000000">P{{ project.id }}</a></th>
-            {% endfor %}
-            {% for chair in chairs %}
-            <th class="col-xs-1" style="text-align: center"><a href="/task_in_months/{{ project.id }}" style="color: #000000">c{{ chair.id }}</a>
-            </th>
-            {% endfor %}
-            {% for position in positions %}
-            <th class="col-xs-1" style="text-align: center"><a href="/task_in_months/{{ project.id }}"
-                                                               style="color: #000000">p{{ position.id }}</a></th>
-            {% endfor %}
-        </tr>
-        </thead>
-        <tbody>
-        {% for employee_info in employee_infos %}
-        {% for employeetask in employeetasks %}
-        <!-- employee_info = [fullname, summed_workload, workload_percentage] -->
-        <tr style="text-align: right">
-            {% if employee_info.3 > 1.0 %}
-            <td>
-                <a href="/employee_in_months/{{ employee_info.0.id }}" style="color: #000000; background-color: #ff726f">{{ employee_info.0 }}</a>
-                <a href="/edit_emp/{{ employee_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
-            </td>
-            {% elif employee_info.3 > 0.8 %}
-            <td>
-                <a href="/employee_in_months/{{ employee_info.0.id }}" style="color: #000000; background-color: #ffc966">{{ employee_info.0 }}</a>
-                <a href="/edit_emp/{{ employee_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
-            </td>
-            {% else %}
-            <td>
-                <a href="/employee_in_months/{{ employee_info.0.id }}" style="color: #000000; background-color:#90ee90">{{ employee_info.0 }}</a>
-                <a href="/edit_emp/{{ employee_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
-            </td>
-            {% endif %}
-            <td style="text-align: left">{{ employee_info.1 }}% ({{ employee_info.2 }}%)</td>
+            </caption>
+            <thead>
+            <tr>
+                <th style="text-align: right">Employee</th>
+                <th style="text-align: left">Sum / (Capacity)</th>
+                {% for task in tasks %}
+                <th class="col-xs-1" style="text-align: center">
+                    <a href="/task_in_months/{{ task.id }}/{{ month.id }}" style="color: #000000">{{ task }}<br></a>
+                    <a href="/edit_task/{{ task.id }}" class="btn btn-primary btn-xs">Edit</a>
+                </th>
+                {% endfor %}
+                <!-- Add new Tasks (pretty ugly)
+                <th>Project<br><a href="/add_new_proj" class="btn btn-primary btn-xs">Add New</a></th>
+                <th>Position<br><a href="/add_new_pos" class="btn btn-primary btn-xs">Add New</a></th>
+                <th>Chair<br><a href="/add_new_chair" class="btn btn-primary btn-xs">Add New</a></th>
+                -->
+            </tr>
+            </thead>
+            <tbody>
+            {% for employee_info, percentages in employee_infos %}
+            <!-- employee_info = [fullname, summed_workload, workload_percentage] -->
+            <tr style="text-align: right">
+                {% if employee_info.3 > 1.0 %}
+                <td>
+                    <a href="/employee_in_months/{{ employee_info.0.id }}" style="color: #000000; background-color: #ff726f">{{ employee_info.0 }}</a>
+                    <a href="/edit_emp/{{ employee_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
+                </td>
+                {% elif employee_info.3 > 0.8 %}
+                <td>
+                    <a href="/employee_in_months/{{ employee_info.0.id }}" style="color: #000000; background-color: #ffc966">{{ employee_info.0 }}</a>
+                    <a href="/edit_emp/{{ employee_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
+                </td>
+                {% else %}
+                <td>
+                    <a href="/employee_in_months/{{ employee_info.0.id }}" style="color: #000000; background-color:#90ee90">{{ employee_info.0 }}</a>
+                    <a href="/edit_emp/{{ employee_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
+                </td>
+                {% endif %}
+                <td style="text-align: left">{{ employee_info.1 }}% ({{ employee_info.2 }}%)</td>
 
-            {% for employeet in employeetask %}
-            {% if employeet.0 == '-' %}
-            <td style="text-align: center"><a href="/add_new_ass/"
-                                              style="color:#000000">{{ employeet.0 }}</a></td>
-            {% else %}
-            {% if employeet.2 %}
-            <td style="text-align: center">
-                <a href="/edit_ass/{{ employeet.1 }}"
-                   style="color: #000000; background-color: #ffff94">{{ employeet.0 }}%</a>
-            </td>
-            {% else %}
-            <td style="text-align: center">
-                <a href="/edit_ass/{{ employeet.1 }}"
-                   style="color: #000000; background-color: #add8e6">{{ employeet.0 }}%</a>
-            </td>
-            {% endif %}
-            {% endif %}
-            {% endfor %}
-        </tr>
+                {% for percentage in percentages %}
+                {% if percentage.0 == '-' %}
+                <td style="text-align: center"><a href="/add_new_ass/"
+                                                  style="color:#000000">{{ percentage.0 }}</a></td>
+                {% else %}
+                {% if percentage.1 == True %}
+                <td style="text-align: center">
+                    <div style="color: #000000; background-color: #ffff94">{{ percentage.0 }}%</div>
+                </td>
+                {% else %}
+                <td style="text-align: center">
+                    <div style="color: #000000; background-color: #add8e6">{{ percentage.0 }}%</div>
+                </td>
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+            </tr>
 
-        {% endfor %}
-        {% endfor %}
-        <tr style="text-align: right">
-            <td>
-                <span><a href="/add_new_emp" class="btn btn-primary btn-xs">Add New</a></span>
-            </td>
-            <td>∑</td>
-            {% for task_sum in tasks_sum %}
-            {% if task_sum.2 > 1.0 %}
-            <td style="text-align: center">
-                <div style="background-color: #ff726f">{{ task_sum.0 }}</div>
-            </td>
-            {% elif task_sum.2 > 0.8 %}
-            <td style="text-align: center">
-                <div style="background-color: #ffc966">{{ task_sum.0 }}</div>
-            </td>
-            {% else %}
-            <td style="text-align: center">
-                <div style="background-color: #90ee90">{{ task_sum.0 }}</div>
-            </td>
-            {% endif %}
             {% endfor %}
-        </tr>
-        </tbody>
-    </table>
+            <tr style="text-align: right">
+                <td>
+                    <a href="/add_new_emp" class="btn btn-primary btn-xs">Add New</a>
+                </td>
+                <td>Sum:</td>
+                {% for task_sum in task_sums %}
+                <td style="text-align: center">{{ task_sum }}%</td>
+                {% endfor %}
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
+
 {% endblock content %}

@@ -130,7 +130,7 @@ class Assignment(models.Model):
     end = models.DateField('To', default=timezone.now())
     percentage = models.FloatField('Functional Capacity', default=0.2)
     responsibility = models.BooleanField('Responsible', default=False)
-    comment = models.CharField('Comment', max_length=2400, default='')
+    comment = models.CharField('Comment', max_length=2400, default='-')
 
     def __str__(self):
         return '{} --({})-> {}'.format(self.employee, self.percentage, self.task)
