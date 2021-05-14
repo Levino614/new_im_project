@@ -172,14 +172,26 @@ def employee_task(request, id):
     # get all percentages sums for all tasks
     # go through all tasks
     task_sums = []
-    for task in Task.objects.all():
-        task_sum = 0
+    for project in Project.objects.all():
+        sum = 0
         for assignment_per_month in AssignmentPerMonth.objects.all():
-            # if task has assignment in selected month add percentage to sum
-            if assignment_per_month.task.id == task.id and assignment_per_month.month == month:
-                task_sum = task_sum + assignment_per_month.percentage
-        task_sums.append(int(task_sum * 100))
-    print("task_sum: ", task_sums)
+            if project.id == assignment_per_month.task.id and month == assignment_per_month.month:
+                sum = sum + assignment_per_month.percentage
+        task_sums.append([sum, project.ressources])
+    for position in Position.objects.all():
+        sum = 0
+        for assignment_per_month in AssignmentPerMonth.objects.all():
+            if position.id == assignment_per_month.task.id and month == assignment_per_month.month:
+                sum = sum + assignment_per_month.percentage
+        task_sums.append([sum, position.ressources])
+    for chair in Chair.objects.all():
+        sum = 0
+        for assignment_per_month in AssignmentPerMonth.objects.all():
+            if chair.id == assignment_per_month.task.id and month == assignment_per_month.month:
+                sum = sum + assignment_per_month.percentage
+        task_sums.append([sum, chair.requirement])
+
+    print("task:sum: ", task_sums)
 
     #GET INFORMARTION FOR ALL PROJECTS
     task_infos = []
