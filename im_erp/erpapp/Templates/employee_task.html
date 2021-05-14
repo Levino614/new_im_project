@@ -90,13 +90,13 @@
                 <th class="col-xs-1" style="text-align: center">
                     <a href="/task_in_months/{{ task_info.0.id }}/{{ month.id }}" style="color: #000000; background-color: #ffc966">{{ task_info.0 }}</a>
                     ({{ task_info.2 }}%)
-                    <a href="/edit_task/{{ task.id }}" class="btn btn-primary btn-xs">Edit</a>
+                    <a href="/edit_task/{{ task_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
                 </th>
                 {% else %}
                 <th class="col-xs-1" style="text-align: center">
-                    <a href="/task_in_months/{{ task.id }}/{{ month.id }}" style="color: #000000; background-color:#90ee90">{{ task_info.0 }}</a>
+                    <a href="/task_in_months/{{ task_info.0.id }}/{{ month.id }}" style="color: #000000; background-color:#90ee90">{{ task_info.0 }}</a>
                     ({{ task_info.2 }}%)
-                    <a href="/edit_task/{{ task.id }}" class="btn btn-primary btn-xs">Edit</a>
+                    <a href="/edit_task/{{ task_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
                 </th>
                 {% endif %}
                 {% endfor %}
@@ -164,9 +164,9 @@
                 <td>
                     <a href="/add_new_emp" class="btn btn-primary btn-xs">Add New</a>
                 </td>
-                <td>Sum:</td>
+                <td>Sum / <br>(Total&nbsp;Available):</td>
                 {% for task_sum in task_sums %}
-                <td style="text-align: center">{{ task_sum }}%</td>
+                <td style="text-align: center">{{ task_sum.0 }}% ({{ task_sum.1 }}%)</td>
                 {% endfor %}
             </tr>
             </tbody>

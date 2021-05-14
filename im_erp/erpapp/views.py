@@ -177,19 +177,19 @@ def employee_task(request, id):
         for assignment_per_month in AssignmentPerMonth.objects.all():
             if project.id == assignment_per_month.task.id and month == assignment_per_month.month:
                 sum = sum + assignment_per_month.percentage
-        task_sums.append([sum, project.ressources])
+        task_sums.append([int(sum*100), int(project.ressources*100)])
     for position in Position.objects.all():
         sum = 0
         for assignment_per_month in AssignmentPerMonth.objects.all():
             if position.id == assignment_per_month.task.id and month == assignment_per_month.month:
                 sum = sum + assignment_per_month.percentage
-        task_sums.append([sum, position.ressources])
+        task_sums.append([int(sum*100), int(position.ressources*100)])
     for chair in Chair.objects.all():
         sum = 0
         for assignment_per_month in AssignmentPerMonth.objects.all():
             if chair.id == assignment_per_month.task.id and month == assignment_per_month.month:
                 sum = sum + assignment_per_month.percentage
-        task_sums.append([sum, chair.requirement])
+        task_sums.append([int(sum+100), int(chair.requirement*100)])
 
     print("task:sum: ", task_sums)
 
