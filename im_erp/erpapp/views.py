@@ -181,6 +181,50 @@ def employee_task(request, id):
         task_sums.append(int(task_sum * 100))
     print("task_sum: ", task_sums)
 
+    #GET INFORMARTION FOR ALL PROJECTS
+    project_infos = []
+    for project in Project.objects.all():
+        sum = 0
+        for assignment_per_month in AssignmentPerMonth.objects.all():
+            if project.id == assignment_per_month.task.id and month == assignment_per_month.month:
+                sum = sum + assignment_per_month.percentage
+        task_workload = sum / project.ressources
+        project_infos.append([project.title, sum , project.ressources, round(task_workload,2)])
+
+    print("projects: ", project_infos)
+
+    # GET INFORMARTION FOR ALL POSITIONS
+    postion_infos = []
+    for position in Position.objects.all():
+        sum = 0
+        for assignment_per_month in AssignmentPerMonth.objects.all():
+            if position.id == assignment_per_month.task.id and month == assignment_per_month.month:
+                sum = sum + assignment_per_month.percentage
+        task_workload = sum / position.ressources
+        postion_infos.append([position.title, sum, position.ressources, round(task_workload,2)])
+
+    print("postions: ", postion_infos)
+
+    # GET INFORMATION ABOUT ALL CHAIRS
+    chair_infos = []
+    for chair in Chair.objects.all():
+        sum = 0
+        for assignment_per_month in AssignmentPerMonth.objects.all():
+            if chair.id == assignment_per_month.task.id and month == assignment_per_month.month:
+                sum = sum + assignment_per_month.percentage
+        chair_workload = sum / chair.requirement
+        chair_infos.append([chair.title, sum, chair.requirement, round(chair_workload, 2)])
+
+    print("chairs:,", chair_infos)
+
+    #PUT ALL TASK_INFOS TOGETHER
+    tasks_infos = []
+    tasks_infos.append(project_infos)
+    tasks_infos.append(postion_infos)
+    tasks_infos.append(chair_infos)
+    print("tasks: ", tasks_infos)
+
+
     date = timezone.now()
     current_year, current_month, _ = str(date).split('-')
     current_month_name = month_dict[str(int(current_month))]
@@ -682,14 +726,14 @@ def add_new_ass(request):
                 chair_ids.append(chair.id)
             # count assignments to current chair
             if int(form.data['task']) in chair_ids:
-                count = 0
+                sum = 0
                 for assignment in Assignment.objects.all():
                     if assignment.task.id == int(form.data['task']):
-                        count = count + 1
+                        sum = sum + assignment.percentage
                 # check if count equal to requirement of current chair, if true dont allow assign
-                if Chair.objects.get(id=int(form.data['task'])).requirement == count:
+                if float(form.data['percentage']) + sum > Chair.objects.get(id=int(form.data['task'])).requirement:
                     messages.error(request, "Chair " + Chair.objects.get(
-                        id=int(form.data['task'])).title + " has already enough employees.")
+                        id=int(form.data['task'])).title + " would be overbooked.")
                     return redirect('/add_new_ass')
 
             # Get Information about the dates and calculate the duration
