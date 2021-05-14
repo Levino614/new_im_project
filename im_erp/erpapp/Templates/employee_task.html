@@ -4,13 +4,10 @@
 {% block content %}
 <!-- Color Keys Style Sheet -->
 <style>
-    #rectangle{
+#rectangle {
     width:20px;
     height:20px;
 }
-
-
-
 </style>
 <!-- Select Month form -->
 <div class="row">
@@ -46,7 +43,7 @@
     </div>
 </div>
 <!-- Table -->
-<div class="col-12">
+<div class="container">
     <div class="row">
         <!-- Nested Table -->
         <table class="table table-responsive table-striped table-bordered table-light" width="100%" style="table-layout: auto">
@@ -103,6 +100,18 @@
                 </th>
                 {% endif %}
                 {% endfor %}
+                <th class="border-0" style="background-color:#fff">
+                    <div class="dropdown">
+                      <a class="btn btn-primary btn-xs dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+                        Add New
+                      </a>
+                      <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <li><a class="dropdown-item" href="/add_new_proj">Add New Project</a></li>
+                        <li><a class="dropdown-item" href="/add_new_pos">Add New Position</a></li>
+                        <li><a class="dropdown-item" href="/add_new_chair">Add New Chair Task</a></li>
+                      </ul>
+                    </div>
+                </th>
                 <!-- Add new Tasks (pretty ugly)
                 <th>Project<br><a href="/add_new_proj" class="btn btn-primary btn-xs">Add New</a></th>
                 <th>Position<br><a href="/add_new_pos" class="btn btn-primary btn-xs">Add New</a></th>
@@ -134,15 +143,15 @@
 
                 {% for percentage in percentages %}
                 {% if percentage.0 == '-' %}
-                <td style="text-align: center"><a href="/add_new_ass/"
+                <td class="align-middle" style="text-align: center"><a href="/add_new_ass/"
                                                   style="color:#000000">{{ percentage.0 }}</a></td>
                 {% else %}
                 {% if percentage.1 == True %}
-                <td style="text-align: center">
+                <td class="align-middle" style="text-align: center">
                     <div style="color: #000000; background-color: #ffff94">{{ percentage.0 }}%</div>
                 </td>
                 {% else %}
-                <td style="text-align: center">
+                <td class="align-middle" style="text-align: center">
                     <div style="color: #000000; background-color: #add8e6">{{ percentage.0 }}%</div>
                 </td>
                 {% endif %}
