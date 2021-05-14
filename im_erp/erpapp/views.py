@@ -182,47 +182,38 @@ def employee_task(request, id):
     print("task_sum: ", task_sums)
 
     #GET INFORMARTION FOR ALL PROJECTS
-    project_infos = []
+    task_infos = []
     for project in Project.objects.all():
         sum = 0
         for assignment_per_month in AssignmentPerMonth.objects.all():
             if project.id == assignment_per_month.task.id and month == assignment_per_month.month:
                 sum = sum + assignment_per_month.percentage
         task_workload = sum / project.ressources
-        project_infos.append([project.title, sum , project.ressources, round(task_workload,2)])
+        task_infos.append([project, int(sum*100), int(project.ressources*100), round(task_workload,2)])
 
-    print("projects: ", project_infos)
+    print("projects: ", task_infos)
 
     # GET INFORMARTION FOR ALL POSITIONS
-    postion_infos = []
     for position in Position.objects.all():
         sum = 0
         for assignment_per_month in AssignmentPerMonth.objects.all():
             if position.id == assignment_per_month.task.id and month == assignment_per_month.month:
                 sum = sum + assignment_per_month.percentage
         task_workload = sum / position.ressources
-        postion_infos.append([position.title, sum, position.ressources, round(task_workload,2)])
+        task_infos.append([position, int(sum*100), int(position.ressources*100), round(task_workload, 2)])
 
-    print("postions: ", postion_infos)
+    print("postions: ", task_infos)
 
     # GET INFORMATION ABOUT ALL CHAIRS
-    chair_infos = []
     for chair in Chair.objects.all():
         sum = 0
         for assignment_per_month in AssignmentPerMonth.objects.all():
             if chair.id == assignment_per_month.task.id and month == assignment_per_month.month:
                 sum = sum + assignment_per_month.percentage
         chair_workload = sum / chair.requirement
-        chair_infos.append([chair.title, sum, chair.requirement, round(chair_workload, 2)])
+        task_infos.append([chair, int(sum*100), int(chair.requirement*100), round(chair_workload, 2)])
 
-    print("chairs:,", chair_infos)
-
-    #PUT ALL TASK_INFOS TOGETHER
-    tasks_infos = []
-    tasks_infos.append(project_infos)
-    tasks_infos.append(postion_infos)
-    tasks_infos.append(chair_infos)
-    print("tasks: ", tasks_infos)
+    print("chairs:,", task_infos)
 
 
     date = timezone.now()
@@ -239,6 +230,7 @@ def employee_task(request, id):
         next_month = Month.objects.get(id=id)
     context = {
         'tasks': tasks,
+        'task_infos': task_infos,
         'employee_infos': employee_infos,
         'task_sums': task_sums,
         'month': month,
