@@ -103,6 +103,9 @@ def employee_task_no_id(request):
 def employee_task(request, id):
     month = Month.objects.get(id=id)
     tasks = Task.objects.all()
+    projects = Project.objects.all()
+    positions = Position.objects.all()
+    chairs = Chair.objects.all()
 
     month_dict = {
         '1': 'January',
@@ -167,6 +170,7 @@ def employee_task(request, id):
         employee_title.append(assignment_info)
         # append to list for all employees
         employee_infos.append(employee_title)
+
     print("list: ", employee_infos)
 
     # get all percentages sums for all tasks
@@ -193,7 +197,7 @@ def employee_task(request, id):
 
     print("task:sum: ", task_sums)
 
-    #GET INFORMARTION FOR ALL PROJECTS
+    # GET INFORMARTION FOR ALL PROJECTS
     task_infos = []
     for project in Project.objects.all():
         sum = 0
@@ -226,7 +230,6 @@ def employee_task(request, id):
         task_infos.append([chair, int(sum*100), int(chair.requirement*100), round(chair_workload, 2)])
 
     print("chairs:,", task_infos)
-
 
     date = timezone.now()
     current_year, current_month, _ = str(date).split('-')
@@ -675,7 +678,6 @@ def add_new_chair(request):
 
 
 def add_new_ass(request):
-    months = Month.objects.all()
     if request.method == "POST":
         form = AssignmentForm(request.POST)
         if form.is_valid():
@@ -686,7 +688,6 @@ def add_new_ass(request):
                     messages.error(request, "Emplyoee is already assigned to this task.")
                     return redirect('/add_new_ass')
             emp = Employee.objects.get(id=form.data['employee'])
-            tsk = Task.objects.get(id=form.data['task'])
             date_format = "%Y-%m-%d"
             if datetime.date(datetime.strptime(form.data['end'], date_format)) > emp.expiration_date:
                 messages.error(request, "The Employees contract ends before the assignment ends")
@@ -723,7 +724,6 @@ def add_new_ass(request):
                         id=int(form.data['task'])).title + ").")
                     return redirect('/add_new_ass')
             # CHECK IF CHAIR ISNT OVERBOOKED
-            # get ids of all chairs
             chairs = Chair.objects.all()
             chair_ids = []
             for chair in chairs:
@@ -766,7 +766,7 @@ def add_new_ass(request):
                 duration += year_delta * 12 + month_delta
             # Use information to initialize AssignmentPerMonth Objects
             # as long as duration of Assignment is greater than zero
-            while duration > 0:
+            while duration >= 0:
                 start_month = int(start_month)
                 start_year = int(start_year)
                 month_name = month_dict[str(start_month)]
@@ -949,7 +949,7 @@ def update_ass(request, id):
         if year_delta_before >= 0:
             duration_before += year_delta_before * 12 + month_delta_before
         # Use information to delete AssignmentPerMonth Objects (in timeframe start_old -> start)
-        while duration_before > 0:
+        while duration_before >= 0:
             print('Duration before:', duration_before)
             start_year_old = int(start_year_old)
             start_month_old = int(start_month_old)
@@ -975,7 +975,7 @@ def update_ass(request, id):
         if year_delta_after >= 0:
             duration_after += year_delta_after * 12 + month_delta_after
         # Use information to delete AssignmentPerMonth Objects (in timeframe end -> end_old)
-        while duration_after > 0:
+        while duration_after >= 0:
             print('Duration after:', duration_after)
             end_year = int(end_year)
             end_month = int(end_month)
@@ -1008,7 +1008,7 @@ def update_ass(request, id):
         if year_delta >= 0:
             duration += year_delta * 12 + month_delta
         # Use information to edit AssignmentPerMonth Objects
-        while duration > 0:
+        while duration >= 0:
             print('Duration:', duration)
             start_year = int(start_year)
             start_month = int(start_month)
