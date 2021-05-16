@@ -129,10 +129,11 @@ def employee_task(request, id):
 
     print("month: ", month)
     # list for all employees
-    employee_infos = []
+    employee_rows = []
 
     # create a list for each employee
     for employee in Employee.objects.all():
+        employee_row = []
         # employee info
         employee_sum = 0
         # look through all assignments for all tasks for one emoloyee
@@ -149,25 +150,47 @@ def employee_task(request, id):
         # attach these infos to first element in list for each employee
         employee_title = [
             (employee, int(employee_sum * 100), int(employee_capacity * 100), employee_worklooad)]
+        employee_row.append(employee_title)
         # employee_info ending
 
-        # get a list with '-' for every task
-        assignment_info = []
-        for task in tasks:
-            assignment_info.append(('-', False))
-        # go through all task and see if employee is assigned in selected month
-        i = 0
-        for task in tasks:
+        # GET A LIST WITH '-' FOR EVERY PROJECT
+        assignment_infos_project = []
+        for counter, project in enumerate(Project.objects.all()):
+            assignment_infos_project.append(['-', False])
+            # seach assignment for project, employee and selected month
             for assignment_per_month in AssignmentPerMonth.objects.all():
-                # if yes set assignment_info on index to percentage of the assignment and increase i
-                if employee.id == assignment_per_month.employee.id and task.id == assignment_per_month.task.id and month == assignment_per_month.month:
-                    assignment_info[i] = (int(assignment_per_month.percentage * 100), assignment_per_month.responsibility)
-            i = i + 1
-        # append to list with employee_infos in the first element
-        employee_title.append(assignment_info)
-        # append to list for all employees
-        employee_infos.append(employee_title)
-    print("list: ", employee_infos)
+                if employee.id == assignment_per_month.employee.id and project.id == assignment_per_month.task.id and month == assignment_per_month.month:
+                    assignment_infos_project[counter] = [assignment_per_month.percentage, assignment_per_month.responsibility]
+        # append it to the row for employee
+        employee_row.append(assignment_infos_project)
+        # append row to to the matrix for employee_task
+
+        # GET A LIST WITH '-' FOR EVERY POSITION
+        assignment_infos_position = []
+        for counter , position in enumerate(Position.objects.all()):
+            assignment_infos_position.append(['-', False])
+            # search assignments for postion, employee and selected month
+            for assignment_per_month in AssignmentPerMonth.objects.all():
+                if employee.id == assignment_per_month.employee.id and position.id == assignment_per_month.task.id and month == assignment_per_month.month:
+                    assignment_infos_position[counter] = [assignment_per_month.percentage, assignment_per_month.responsibility]
+        # append it to the row for employee
+        employee_row.append(assignment_infos_position)
+
+        # GET A LIST WITH '-' FOR EVERY CHAIR
+        assignment_infos_chair = []
+        for counter, chair in enumerate(Chair.objects.all()):
+            assignment_infos_chair.append(['-', False])
+            # search assignments for chair, employee and selected month
+            for assignment_per_month in AssignmentPerMonth.objects.all():
+                if employee.id == assignment_per_month.employee.id and chair.id == assignment_per_month.task.id and month == assignment_per_month.month:
+                    assignment_infos_chair[counter] = [assignment_per_month.percentage, assignment_per_month.responsibility]
+        # append it to the row for employee
+        employee_row.append(assignment_infos_chair)
+
+
+        employee_rows.append(employee_row)
+    print("employee_rows: ", employee_rows)
+
 
     # get all percentages sums for all tasks
     # go through all tasks
@@ -243,7 +266,7 @@ def employee_task(request, id):
     context = {
         'tasks': tasks,
         'task_infos': task_infos,
-        'employee_infos': employee_infos,
+        #'employee_infos': employee_rows,
         'task_sums': task_sums,
         'month': month,
         'today': today,
