@@ -34,6 +34,7 @@ urlpatterns = [
     path('add_new_chair/', views.add_new_chair),
     path('add_new_ass/', views.add_new_ass),
     path('edit_emp/<int:id>', views.edit_emp),
+    path('edit_task/<int:id>', views.edit_task),
     path('edit_proj/<int:id>', views.edit_proj),
     path('edit_pos/<int:id>', views.edit_pos),
     path('edit_chair/<int:id>', views.edit_chair),

@@ -810,6 +810,24 @@ def edit_emp(request, id):
     return render(request, 'edit_emp.html', context)
 
 
+def edit_task(request, id):
+    projects = Project.objects.all()
+    positions = Position.objects.all()
+    chairs = Chair.objects.all()
+
+    for project in projects:
+        if project.id == id:
+            return redirect('/edit_proj/{}'.format(id))
+    for position in positions:
+        if position.id == id:
+            return redirect('/edit_pos/{}'.format(id))
+    for chair in chairs:
+        if chair.id == id:
+            return redirect('/edit_chair/{}'.format(id))
+
+    return redirect('/tasks')
+
+
 def edit_proj(request, id):
     project = Project.objects.get(id=id)
     context = {
