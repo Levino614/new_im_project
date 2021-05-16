@@ -795,11 +795,12 @@ def add_new_ass(request):
                 else:
                     responsibility = False
 
-                percentage = form.data['percentage']
+                percentage = float(form.data['percentage'])
                 if first:
-                    percentage = percentage * (start_day / 30)
+                    percentage = percentage * ((30 - int(start_day)) / 30)
                 if duration == 0:
-                    percentage = percentage * (end_day / 30)
+                    percentage = percentage * (int(end_day) / 30)
+                    print(percentage, int(end_day), int(end_day) / 30)
 
                 assignment_per_month = AssignmentPerMonth(employee=emp, task=task, month=month_obj, duration=duration,
                                                           percentage=percentage,
@@ -1063,9 +1064,10 @@ def update_ass(request, id):
             print('Assignment:', ass)
             ass.percentage = percentage
             if first:
-                ass.percentage = percentage * (start_day / 30)
+                ass.percentage = ass.percentage * ((30 - int(start_day)) / 30)
             if duration == 0:
-                ass.percentage = percentage * (end_day / 30)
+                ass.percentage = ass.percentage * (int(end_day) / 30)
+                print(ass.percentage, int(end_day), int(end_day)/30)
 
             ass.responsibility = responsibility
             ass.save()
