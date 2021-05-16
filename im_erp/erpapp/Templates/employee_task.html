@@ -115,7 +115,7 @@
             </tr>
             </thead>
             <tbody>
-            {% for employee_info, percentages in employee_infos %}
+            {% for employee_info, proj_percentages, pos_percentages, chair_percentages in employee_rows %}
             <!-- employee_info = [fullname, summed_workload, workload_percentage] -->
             <tr style="text-align: right">
                 {% if employee_info.3 > 1.0 %}
@@ -136,7 +136,41 @@
                 {% endif %}
                 <td style="text-align: left">{{ employee_info.1 }}% ({{ employee_info.2 }}%)</td>
 
-                {% for percentage in percentages %}
+                {% for percentage in proj_percentages %}
+                {% if percentage.0 == '-' %}
+                <td class="align-middle" style="text-align: center"><a href="/add_new_ass/"
+                                                  style="color:#000000">{{ percentage.0 }}</a></td>
+                {% else %}
+                {% if percentage.1 == True %}
+                <td class="align-middle" style="text-align: center">
+                    <div style="color: #000000; background-color: #ffff94">{{ percentage.0 }}%</div>
+                </td>
+                {% else %}
+                <td class="align-middle" style="text-align: center">
+                    <div style="color: #000000; background-color: #add8e6">{{ percentage.0 }}%</div>
+                </td>
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+
+                {% for percentage in pos_percentages %}
+                {% if percentage.0 == '-' %}
+                <td class="align-middle" style="text-align: center"><a href="/add_new_ass/"
+                                                  style="color:#000000">{{ percentage.0 }}</a></td>
+                {% else %}
+                {% if percentage.1 == True %}
+                <td class="align-middle" style="text-align: center">
+                    <div style="color: #000000; background-color: #ffff94">{{ percentage.0 }}%</div>
+                </td>
+                {% else %}
+                <td class="align-middle" style="text-align: center">
+                    <div style="color: #000000; background-color: #add8e6">{{ percentage.0 }}%</div>
+                </td>
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+
+                {% for percentage in chair_percentages %}
                 {% if percentage.0 == '-' %}
                 <td class="align-middle" style="text-align: center"><a href="/add_new_ass/"
                                                   style="color:#000000">{{ percentage.0 }}</a></td>
