@@ -757,8 +757,8 @@ def add_new_ass(request):
                 '11': 'November',
                 '12': 'December',
             }
-            start_year, start_month, _ = str(form.data['start']).split('-')
-            end_year, end_month, _ = str(form.data['end']).split('-')
+            start_year, start_month, start_day = str(form.data['start']).split('-')
+            end_year, end_month, end_day = str(form.data['end']).split('-')
             year_delta = int(end_year) - int(start_year)
             month_delta = int(end_month) - int(start_month)
             duration = 0
@@ -766,6 +766,7 @@ def add_new_ass(request):
                 duration += year_delta * 12 + month_delta
             # Use information to initialize AssignmentPerMonth Objects
             # as long as duration of Assignment is greater than zero
+            first = True
             while duration >= 0:
                 start_month = int(start_month)
                 start_year = int(start_year)
@@ -777,9 +778,15 @@ def add_new_ass(request):
                     responsibility = True
                 else:
                     responsibility = False
-                print('RESPONSIBILITY:', responsibility, type(responsibility))
+
+                percentage = form.data['percentage']
+                if first:
+                    percentage = percentage * (start_day / 30)
+                if duration == 0:
+                    percentage = percentage * (end_day / 30)
+
                 assignment_per_month = AssignmentPerMonth(employee=emp, task=task, month=month_obj, duration=duration,
-                                                          percentage=form.data['percentage'],
+                                                          percentage=percentage,
                                                           responsibility=responsibility)
                 assignment_per_month.save()
 
@@ -790,6 +797,7 @@ def add_new_ass(request):
                     start_month = 1
                     start_year += 1
                 duration -= 1
+                first = False
 
             form.save()
             return redirect('/assignments')
@@ -953,9 +961,9 @@ def update_ass(request, id):
         }
         # Get information about the dates
         print(form.data)
-        start_year, start_month, _ = str(form.data['start']).split('-')
-        end_year, end_month, _ = str(form.data['end']).split('-')
-        end_year_update, end_month_update, _ = str(form.data['end']).split('-')
+        start_year, start_month, start_day = str(form.data['start']).split('-')
+        end_year, end_month, end_day = str(form.data['end']).split('-')
+        end_year_update, end_month_update, end_day_update = str(form.data['end']).split('-')
 
         # Delete AssignmentPerMonths before and after the newly set timeframe:
         # start_old -> start    and    end -> end_old
@@ -1026,6 +1034,7 @@ def update_ass(request, id):
         if year_delta >= 0:
             duration += year_delta * 12 + month_delta
         # Use information to edit AssignmentPerMonth Objects
+        first = True
         while duration >= 0:
             print('Duration:', duration)
             start_year = int(start_year)
@@ -1037,6 +1046,11 @@ def update_ass(request, id):
             ass = AssignmentPerMonth.objects.get(employee=emp, task=task, month=month_obj)
             print('Assignment:', ass)
             ass.percentage = percentage
+            if first:
+                ass.percentage = percentage * (start_day / 30)
+            if duration == 0:
+                ass.percentage = percentage * (end_day / 30)
+
             ass.responsibility = responsibility
             ass.save()
             # Iterator while loop
@@ -1046,6 +1060,7 @@ def update_ass(request, id):
                 start_month = 1
                 start_year += 1
             duration -= 1
+            first = False
 
         form.save()
         return redirect('/assignments')
