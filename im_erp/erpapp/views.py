@@ -8,6 +8,7 @@ from django.contrib import messages
 from erpapp.models import Employee, Project, Position, Chair, Assignment, Task, Month, AssignmentPerMonth
 
 
+# DATA CRUD (CREATE/READ/UPDATE/DELETE)
 def data(request):
     employees = Employee.objects.all()
     projects = Project.objects.all()
@@ -51,6 +52,7 @@ def data(request):
     return render(request, 'data.html', context)
 
 
+# DASHBOARD / INDEX / HOME
 def dashboard_no_id(request):
     date = timezone.now()
     current_year, current_month, _ = str(date).split('-')
@@ -100,7 +102,6 @@ def dashboard(request, id):
                 return redirect('/dashboard/{}'.format(month_id))
         return redirect('/dashboard/')
 
-    print("month: ", month)
     # list for all employees
     employee_rows = []
 
@@ -129,7 +130,8 @@ def dashboard(request, id):
             # seach assignment for project, employee and selected month
             for assignment_per_month in AssignmentPerMonth.objects.all():
                 if employee.id == assignment_per_month.employee.id and project.id == assignment_per_month.task.id and month == assignment_per_month.month:
-                    assignment_infos_project[counter] = [int(assignment_per_month.percentage * 100), assignment_per_month.responsibility]
+                    assignment_infos_project[counter] = [int(assignment_per_month.percentage * 100),
+                                                         assignment_per_month.responsibility]
         # append it to the row for employee
         employee_title.append(assignment_infos_project)
         # append row to to the matrix for employee_task
@@ -141,7 +143,8 @@ def dashboard(request, id):
             # search assignments for postion, employee and selected month
             for assignment_per_month in AssignmentPerMonth.objects.all():
                 if employee.id == assignment_per_month.employee.id and position.id == assignment_per_month.task.id and month == assignment_per_month.month:
-                    assignment_infos_position[counter] = [int(assignment_per_month.percentage * 100), assignment_per_month.responsibility]
+                    assignment_infos_position[counter] = [int(assignment_per_month.percentage * 100),
+                                                          assignment_per_month.responsibility]
         # append it to the row for employee
         employee_title.append(assignment_infos_position)
 
@@ -152,7 +155,8 @@ def dashboard(request, id):
             # search assignments for chair, employee and selected month
             for assignment_per_month in AssignmentPerMonth.objects.all():
                 if employee.id == assignment_per_month.employee.id and chair.id == assignment_per_month.task.id and month == assignment_per_month.month:
-                    assignment_infos_chair[counter] = [int(assignment_per_month.percentage * 100), assignment_per_month.responsibility]
+                    assignment_infos_chair[counter] = [int(assignment_per_month.percentage * 100),
+                                                       assignment_per_month.responsibility]
         # append it to the row for employee
         employee_title.append(assignment_infos_chair)
 
@@ -166,19 +170,19 @@ def dashboard(request, id):
         for assignment_per_month in AssignmentPerMonth.objects.all():
             if project.id == assignment_per_month.task.id and month == assignment_per_month.month:
                 sum = sum + assignment_per_month.percentage
-        task_sums.append([int(sum*100), int(project.ressources*100)])
+        task_sums.append([int(sum * 100), int(project.ressources * 100)])
     for position in Position.objects.all():
         sum = 0
         for assignment_per_month in AssignmentPerMonth.objects.all():
             if position.id == assignment_per_month.task.id and month == assignment_per_month.month:
                 sum = sum + assignment_per_month.percentage
-        task_sums.append([int(sum*100), int(position.ressources*100)])
+        task_sums.append([int(sum * 100), int(position.ressources * 100)])
     for chair in Chair.objects.all():
         sum = 0
         for assignment_per_month in AssignmentPerMonth.objects.all():
             if chair.id == assignment_per_month.task.id and month == assignment_per_month.month:
                 sum = sum + assignment_per_month.percentage
-        task_sums.append([int(sum+100), int(chair.requirement*100)])
+        task_sums.append([int(sum + 100), int(chair.requirement * 100)])
 
     # print("task:sum: ", task_sums)
 
@@ -190,7 +194,7 @@ def dashboard(request, id):
             if project.id == assignment_per_month.task.id and month == assignment_per_month.month:
                 sum = sum + assignment_per_month.percentage
         task_workload = sum / project.ressources
-        task_infos.append([project, int(sum*100), int(project.ressources*100), round(task_workload,2)])
+        task_infos.append([project, int(sum * 100), int(project.ressources * 100), round(task_workload, 2)])
 
     # print("projects: ", task_infos)
 
@@ -201,7 +205,7 @@ def dashboard(request, id):
             if position.id == assignment_per_month.task.id and month == assignment_per_month.month:
                 sum = sum + assignment_per_month.percentage
         task_workload = sum / position.ressources
-        task_infos.append([position, int(sum*100), int(position.ressources*100), round(task_workload, 2)])
+        task_infos.append([position, int(sum * 100), int(position.ressources * 100), round(task_workload, 2)])
 
     # print("postions: ", task_infos)
 
@@ -212,7 +216,7 @@ def dashboard(request, id):
             if chair.id == assignment_per_month.task.id and month == assignment_per_month.month:
                 sum = sum + assignment_per_month.percentage
         chair_workload = sum / chair.requirement
-        task_infos.append([chair, int(sum*100), int(chair.requirement*100), round(chair_workload, 2)])
+        task_infos.append([chair, int(sum * 100), int(chair.requirement * 100), round(chair_workload, 2)])
 
     # print("chairs:,", task_infos)
 
@@ -270,6 +274,7 @@ def dashboard(request, id):
     return render(request, 'dashboard.html', context)
 
 
+# EMPLOYEE/TASK WORKLOAD IN SPECIFIC MONTH
 def employee_in_months_no_id(request, emp_id):
     date = timezone.now()
     current_year, current_month, _ = str(date).split('-')
@@ -308,7 +313,7 @@ def employee_in_months(request, emp_id, month_id):
         for month in Month.objects.all():
             for assignment_per_months in AssignmentPerMonth.objects.all():  # set assignment_percentages to right month
                 if task.id == assignment_per_months.task.id and employee.id == assignment_per_months.employee.id and month == assignment_per_months.month:
-                    assignments[i] = int(round(assignment_per_months.percentage,2) * 100)
+                    assignments[i] = int(round(assignment_per_months.percentage, 2) * 100)
             i = i + 1
         task_info.append(assignments[month_id - 1:month_id + 11])
         tasks_in_months.append(task_info)
@@ -341,8 +346,6 @@ def employee_in_months(request, emp_id, month_id):
         next_month = Month.objects.get(id=month_id + 1)
     except Exception:
         next_month = Month.objects.get(id=month_id)
-
-    print("list: ", tasks_in_months)
 
     context = {
         'employee': employee,
@@ -394,7 +397,7 @@ def task_in_months(request, tsk_id, month_id):
         for month in Month.objects.all():
             for assignment_per_months in AssignmentPerMonth.objects.all():  # set assignment_percentages to right month
                 if employee.id == assignment_per_months.employee.id and task.id == assignment_per_months.task.id and month == assignment_per_months.month:
-                    assignments[i] = int(round(assignment_per_months.percentage,2) * 100)
+                    assignments[i] = int(round(assignment_per_months.percentage, 2) * 100)
             i = i + 1
         employee_info.append(assignments[month_id - 1:month_id + 11])
         emps_in_months.append(employee_info)
@@ -428,8 +431,6 @@ def task_in_months(request, tsk_id, month_id):
     except Exception:
         next_month = Month.objects.get(id=month_id)
 
-    print("list: ", emps_in_months)
-
     context = {
         'task': task,
         'emps_in_months': emps_in_months,
@@ -442,6 +443,7 @@ def task_in_months(request, tsk_id, month_id):
     return render(request, 'task_in_months.html', context)
 
 
+# TIMESHEETS
 def employee_time_no_id(request):
     date = timezone.now()
     current_year, current_month, _ = str(date).split('-')
@@ -613,6 +615,7 @@ def task_time(request, id):
     return render(request, 'task_time.html', context)
 
 
+# ADD NEW OBJECTS
 def add_new_emp(request):
     if request.method == "POST":
         form = EmployeeForm(request.POST)
@@ -693,7 +696,7 @@ def add_new_chair(request):
 
             for chair in Chair.objects.all():
                 if chair.title == form.data['title']:
-                    messages.error(request, "The Chair " + form.data['title'] +" already exists")
+                    messages.error(request, "The Chair " + form.data['title'] + " already exists")
                     return redirect('/add_new_chair')
 
             form.save()
@@ -841,6 +844,7 @@ def add_new_ass(request):
     return render(request, 'add_new_ass.html', context)
 
 
+# EDIT OBJECTS
 def edit_emp(request, id):
     employee = Employee.objects.get(id=id)
     context = {
@@ -900,6 +904,7 @@ def edit_ass(request, id):
     return render(request, 'edit_ass.html', context)
 
 
+# UPDATE OBJECTS
 def update_emp(request, id):
     employee = Employee.objects.get(id=id)
     form = EmployeeForm(request.POST, instance=employee)
@@ -1101,6 +1106,7 @@ def update_ass(request, id):
     return render(request, 'edit_ass.html', context)
 
 
+# DELETE OBJECTS
 def delete_emp(request, id):
     employee = Employee.objects.get(id=id)
     employee.delete()
