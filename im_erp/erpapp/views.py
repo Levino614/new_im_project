@@ -977,8 +977,8 @@ def update_chair(request, id):
 def update_ass(request, id):
     assignment = Assignment.objects.get(id=id)
     # Get information about old timeframe before update
-    start_year_old, start_month_old, _ = str(assignment.start).split('-')
-    end_year_old, end_month_old, _ = str(assignment.end).split('-')
+    start_year_old, start_month_old, start_day_old = str(assignment.start).split('-')
+    end_year_old, end_month_old, end_day_old = str(assignment.end).split('-')
     print(assignment.start, assignment.end)
     form = EditAssignmentForm(request.POST, instance=assignment)
     if form.is_valid():
@@ -990,7 +990,7 @@ def update_ass(request, id):
         percentage = form.data['percentage']
         try:
             responsibility = form.data['responsibility']
-        except:
+        except Exception:
             responsibility = False
 
         # Restriction: User shall not be able to edit past assignments
@@ -1032,7 +1032,7 @@ def update_ass(request, id):
         if year_delta_before >= 0:
             duration_before += year_delta_before * 12 + month_delta_before
         # Use information to delete AssignmentPerMonth Objects (in timeframe start_old -> start)
-        while duration_before >= 0:
+        while duration_before > 0:
             print('Duration before:', duration_before)
             start_year_old = int(start_year_old)
             start_month_old = int(start_month_old)
@@ -1058,7 +1058,7 @@ def update_ass(request, id):
         if year_delta_after >= 0:
             duration_after += year_delta_after * 12 + month_delta_after
         # Use information to delete AssignmentPerMonth Objects (in timeframe end -> end_old)
-        while duration_after >= 0:
+        while duration_after > 0:
             print('Duration after:', duration_after)
             end_year = int(end_year)
             end_month = int(end_month)
