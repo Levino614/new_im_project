@@ -503,12 +503,15 @@ def employee_time(request, id):
     }
     if request.method == "POST":
         start = request.POST.get('start_month')
-        start_year, start_month = str(start).split('-')
+        try:
+            start_year, start_month = str(start).split('-')
+        except ValueError:
+            return redirect('/employee_time/{}'.format(id))
         for month_obj in Month.objects.all():
             if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
                 month_id = month_obj.id
                 return redirect('/employee_time/{}'.format(month_id))
-        return redirect('/employee_time/')
+        return redirect('/employee_time/{}'.format(id))
 
     # create list of lists with task sums for employees
     for employee in employees:
@@ -592,12 +595,15 @@ def task_time(request, id):
     }
     if request.method == "POST":
         start = request.POST.get('start_month')
-        start_year, start_month = str(start).split('-')
+        try:
+            start_year, start_month = str(start).split('-')
+        except ValueError:
+            return redirect('/task_time/{}'.format(id))
         for month_obj in Month.objects.all():
             if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
                 month_id = month_obj.id
                 return redirect('/task_time/{}'.format(month_id))
-        return redirect('/task_time/')
+        return redirect('/task_time/{}'.format(id))
 
     for task in tasks:
         employees_sum = []
@@ -695,7 +701,6 @@ def add_new_pos(request):
                 messages.error(request, "The Position " + form.data['title'] + " already exists")
                 return redirect('/add_new_pos')
         if form.is_valid():
-
             form.save()
             return redirect('/data')
     else:
@@ -709,16 +714,12 @@ def add_new_pos(request):
 def add_new_chair(request):
     if request.method == "POST":
         form = ChairForm(request.POST)
-        if form.is_valid():
-
         for chair in Chair.objects.all():
             if chair.title == form.data['title']:
                 messages.error(request, "The Chair " + form.data['title'] + " already exists")
                 return redirect('/add_new_chair')
 
         if form.is_valid():
-
-
             form.save()
             return redirect('/data')
     else:
