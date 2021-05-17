@@ -8,7 +8,8 @@ from django.contrib import messages
 from erpapp.models import Employee, Project, Position, Chair, Assignment, Task, Month, AssignmentPerMonth
 
 
-def index(request):
+# DATA CRUD (CREATE/READ/UPDATE/DELETE)
+def data(request):
     employees = Employee.objects.all()
     projects = Project.objects.all()
     positions = Position.objects.all()
@@ -45,40 +46,14 @@ def index(request):
         'positions': positions,
         'chairs': chairs,
         'project_infos': project_infos,
-        'employee_infos': employee_infos
+        'employee_infos': employee_infos,
+        'assignments': assignments,
     }
-    return render(request, 'index.html', context)
+    return render(request, 'data.html', context)
 
 
-def employee(request):
-    employees = Employee.objects.all()
-    context = {
-        'employees': employees
-    }
-    return render(request, 'employee.html', context)
-
-
-def task(request):
-    projects = Project.objects.all()
-    positions = Position.objects.all()
-    chairs = Chair.objects.all()
-    context = {
-        'projects': projects,
-        'positions': positions,
-        'chairs': chairs
-    }
-    return render(request, 'tasks.html', context)
-
-
-def assignment(request):
-    assignments = Assignment.objects.all()
-    context = {
-        'assignments': assignments
-    }
-    return render(request, 'assignment.html', context)
-
-
-def employee_task_no_id(request):
+# DASHBOARD / INDEX / HOME
+def dashboard_no_id(request):
     date = timezone.now()
     current_year, current_month, _ = str(date).split('-')
     month_dict = {
@@ -97,10 +72,10 @@ def employee_task_no_id(request):
     }
     month_name = month_dict[str(int(current_month))]
     month = Month.objects.get(month=month_name, year=current_year)
-    return redirect('/employee_task/{}'.format(month.id))
+    return redirect('/dashboard/{}'.format(month.id))
 
 
-def employee_task(request, id):
+def dashboard(request, id):
     month = Month.objects.get(id=id)
     tasks = Task.objects.all()
     projects = Project.objects.all()
@@ -127,10 +102,9 @@ def employee_task(request, id):
         for month_obj in Month.objects.all():
             if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
                 month_id = month_obj.id
-                return redirect('/employee_task/{}'.format(month_id))
-        return redirect('/employee_task/')
+                return redirect('/dashboard/{}'.format(month_id))
+        return redirect('/dashboard/')
 
-    print("month: ", month)
     # list for all employees
     employee_rows = []
 
@@ -159,7 +133,8 @@ def employee_task(request, id):
             # seach assignment for project, employee and selected month
             for assignment_per_month in AssignmentPerMonth.objects.all():
                 if employee.id == assignment_per_month.employee.id and project.id == assignment_per_month.task.id and month == assignment_per_month.month:
-                    assignment_infos_project[counter] = [int(assignment_per_month.percentage * 100), assignment_per_month.responsibility]
+                    assignment_infos_project[counter] = [int(assignment_per_month.percentage * 100),
+                                                         assignment_per_month.responsibility]
         # append it to the row for employee
         employee_title.append(assignment_infos_project)
         # append row to to the matrix for employee_task
@@ -171,7 +146,8 @@ def employee_task(request, id):
             # search assignments for postion, employee and selected month
             for assignment_per_month in AssignmentPerMonth.objects.all():
                 if employee.id == assignment_per_month.employee.id and position.id == assignment_per_month.task.id and month == assignment_per_month.month:
-                    assignment_infos_position[counter] = [int(assignment_per_month.percentage * 100), assignment_per_month.responsibility]
+                    assignment_infos_position[counter] = [int(assignment_per_month.percentage * 100),
+                                                          assignment_per_month.responsibility]
         # append it to the row for employee
         employee_title.append(assignment_infos_position)
 
@@ -182,7 +158,8 @@ def employee_task(request, id):
             # search assignments for chair, employee and selected month
             for assignment_per_month in AssignmentPerMonth.objects.all():
                 if employee.id == assignment_per_month.employee.id and chair.id == assignment_per_month.task.id and month == assignment_per_month.month:
-                    assignment_infos_chair[counter] = [int(assignment_per_month.percentage * 100), assignment_per_month.responsibility]
+                    assignment_infos_chair[counter] = [int(assignment_per_month.percentage * 100),
+                                                       assignment_per_month.responsibility]
         # append it to the row for employee
         employee_title.append(assignment_infos_chair)
 
@@ -196,19 +173,19 @@ def employee_task(request, id):
         for assignment_per_month in AssignmentPerMonth.objects.all():
             if project.id == assignment_per_month.task.id and month == assignment_per_month.month:
                 sum = sum + assignment_per_month.percentage
-        task_sums.append([int(sum*100), int(project.ressources*100)])
+        task_sums.append([int(sum * 100), int(project.ressources * 100)])
     for position in Position.objects.all():
         sum = 0
         for assignment_per_month in AssignmentPerMonth.objects.all():
             if position.id == assignment_per_month.task.id and month == assignment_per_month.month:
                 sum = sum + assignment_per_month.percentage
-        task_sums.append([int(sum*100), int(position.ressources*100)])
+        task_sums.append([int(sum * 100), int(position.ressources * 100)])
     for chair in Chair.objects.all():
         sum = 0
         for assignment_per_month in AssignmentPerMonth.objects.all():
             if chair.id == assignment_per_month.task.id and month == assignment_per_month.month:
                 sum = sum + assignment_per_month.percentage
-        task_sums.append([int(sum+100), int(chair.requirement*100)])
+        task_sums.append([int(sum + 100), int(chair.requirement * 100)])
 
     # print("task:sum: ", task_sums)
 
@@ -220,7 +197,7 @@ def employee_task(request, id):
             if project.id == assignment_per_month.task.id and month == assignment_per_month.month:
                 sum = sum + assignment_per_month.percentage
         task_workload = sum / project.ressources
-        task_infos.append([project, int(sum*100), int(project.ressources*100), round(task_workload,2)])
+        task_infos.append([project, int(sum * 100), int(project.ressources * 100), round(task_workload, 2)])
 
     # print("projects: ", task_infos)
 
@@ -231,7 +208,7 @@ def employee_task(request, id):
             if position.id == assignment_per_month.task.id and month == assignment_per_month.month:
                 sum = sum + assignment_per_month.percentage
         task_workload = sum / position.ressources
-        task_infos.append([position, int(sum*100), int(position.ressources*100), round(task_workload, 2)])
+        task_infos.append([position, int(sum * 100), int(position.ressources * 100), round(task_workload, 2)])
 
     # print("postions: ", task_infos)
 
@@ -242,7 +219,7 @@ def employee_task(request, id):
             if chair.id == assignment_per_month.task.id and month == assignment_per_month.month:
                 sum = sum + assignment_per_month.percentage
         chair_workload = sum / chair.requirement
-        task_infos.append([chair, int(sum*100), int(chair.requirement*100), round(chair_workload, 2)])
+        task_infos.append([chair, int(sum * 100), int(chair.requirement * 100), round(chair_workload, 2)])
 
     # print("chairs:,", task_infos)
 
@@ -258,9 +235,38 @@ def employee_task(request, id):
         next_month = Month.objects.get(id=id + 1)
     except Exception:
         next_month = Month.objects.get(id=id)
+
+    # Warnings and recommendations
+    projects = Project.objects.all()
+    assignments = Assignment.objects.all()
+    employees = Employee.objects.all()
+    project_infos = []
+    employee_infos = []
+    for project in projects:
+        sum = 0
+        ressources = project.ressources
+        title = project.title
+        for assignment in assignments:
+            if assignment.task.id == project.id:
+                sum += assignment.percentage
+        diff = int(round((sum - ressources), 2) * 100)
+
+        project_infos.append((sum, ressources, title, diff))
+
+        # Employees information
+        for employee in employees:
+            employee_sum = 0
+            for task in tasks:
+                for assignment in assignments:
+                    if assignment.task.id == task.id and assignment.employee.id == employee.id:
+                        employee_sum += assignment.percentage
+            overload = int(round((employee_sum - employee.capacity), 2) * 100)
+            employee_infos.append((employee, employee_sum, employee.capacity, overload))
     context = {
         'tasks': tasks,
         'task_infos': task_infos,
+        'project_infos': project_infos,
+        'employee_infos': employee_infos,
         'employee_rows': employee_rows,
         'task_sums': task_sums,
         'month': month,
@@ -268,9 +274,10 @@ def employee_task(request, id):
         'previous_month': previous_month,
         'next_month': next_month,
     }
-    return render(request, 'employee_task.html', context)
+    return render(request, 'dashboard.html', context)
 
 
+# EMPLOYEE/TASK WORKLOAD IN SPECIFIC MONTH
 def employee_in_months_no_id(request, emp_id):
     date = timezone.now()
     current_year, current_month, _ = str(date).split('-')
@@ -309,7 +316,7 @@ def employee_in_months(request, emp_id, month_id):
         for month in Month.objects.all():
             for assignment_per_months in AssignmentPerMonth.objects.all():  # set assignment_percentages to right month
                 if task.id == assignment_per_months.task.id and employee.id == assignment_per_months.employee.id and month == assignment_per_months.month:
-                    assignments[i] = int(round(assignment_per_months.percentage,2) * 100)
+                    assignments[i] = int(round(assignment_per_months.percentage, 2) * 100)
             i = i + 1
         task_info.append(assignments[month_id - 1:month_id + 11])
         tasks_in_months.append(task_info)
@@ -395,7 +402,7 @@ def task_in_months(request, tsk_id, month_id):
         for month in Month.objects.all():
             for assignment_per_months in AssignmentPerMonth.objects.all():  # set assignment_percentages to right month
                 if employee.id == assignment_per_months.employee.id and task.id == assignment_per_months.task.id and month == assignment_per_months.month:
-                    assignments[i] = int(round(assignment_per_months.percentage,2) * 100)
+                    assignments[i] = int(round(assignment_per_months.percentage, 2) * 100)
             i = i + 1
         employee_info.append(assignments[month_id - 1:month_id + 11])
         emps_in_months.append(employee_info)
@@ -429,8 +436,6 @@ def task_in_months(request, tsk_id, month_id):
     except Exception:
         next_month = Month.objects.get(id=month_id)
 
-    print("list: ", emps_in_months)
-
     context = {
         'task': task,
         'emps_in_months': emps_in_months,
@@ -443,6 +448,7 @@ def task_in_months(request, tsk_id, month_id):
     return render(request, 'task_in_months.html', context)
 
 
+# TIMESHEETS
 def employee_time_no_id(request):
     date = timezone.now()
     current_year, current_month, _ = str(date).split('-')
@@ -614,6 +620,7 @@ def task_time(request, id):
     return render(request, 'task_time.html', context)
 
 
+# ADD NEW OBJECTS
 def add_new_emp(request):
     if request.method == "POST":
         form = EmployeeForm(request.POST)
@@ -635,7 +642,7 @@ def add_new_emp(request):
                 return redirect('/add_new_ass')
 
             form.save()
-            return redirect('/employee')
+            return redirect('/data')
     else:
         form = EmployeeForm()
     context = {
@@ -660,7 +667,7 @@ def add_new_proj(request):
                 return redirect('/add_new_proj')
 
             form.save()
-            return redirect('/tasks')
+            return redirect('/data')
     else:
         form = ProjectForm()
     context = {
@@ -680,7 +687,7 @@ def add_new_pos(request):
         if form.is_valid():
 
             form.save()
-            return redirect('/tasks')
+            return redirect('/data')
     else:
         form = PositionForm()
     context = {
@@ -692,6 +699,7 @@ def add_new_pos(request):
 def add_new_chair(request):
     if request.method == "POST":
         form = ChairForm(request.POST)
+        if form.is_valid():
 
         for chair in Chair.objects.all():
             if chair.title == form.data['title']:
@@ -702,7 +710,7 @@ def add_new_chair(request):
 
 
             form.save()
-            return redirect('/tasks')
+            return redirect('/data')
     else:
         form = ChairForm()
     context = {
@@ -836,7 +844,7 @@ def add_new_ass(request):
                 first = False
 
             form.save()
-            return redirect('/assignments')
+            return redirect('/data')
     else:
         form = AssignmentForm()
 
@@ -846,6 +854,7 @@ def add_new_ass(request):
     return render(request, 'add_new_ass.html', context)
 
 
+# EDIT OBJECTS
 def edit_emp(request, id):
     employee = Employee.objects.get(id=id)
     context = {
@@ -869,7 +878,7 @@ def edit_task(request, id):
         if chair.id == id:
             return redirect('/edit_chair/{}'.format(id))
 
-    return redirect('/tasks')
+    return redirect('/data')
 
 
 def edit_proj(request, id):
@@ -905,12 +914,13 @@ def edit_ass(request, id):
     return render(request, 'edit_ass.html', context)
 
 
+# UPDATE OBJECTS
 def update_emp(request, id):
     employee = Employee.objects.get(id=id)
     form = EmployeeForm(request.POST, instance=employee)
     if form.is_valid():
         form.save()
-        return redirect('/employee')
+        return redirect('/data')
     context = {
         'employee': employee
     }
@@ -922,7 +932,7 @@ def update_proj(request, id):
     form = ProjectForm(request.POST, instance=project)
     if form.is_valid():
         form.save()
-        return redirect('/tasks')
+        return redirect('/data')
     context = {
         'project': project
     }
@@ -934,7 +944,7 @@ def update_pos(request, id):
     form = PositionForm(request.POST, instance=position)
     if form.is_valid():
         form.save()
-        return redirect('/tasks')
+        return redirect('/data')
     context = {
         'position': position
     }
@@ -946,7 +956,7 @@ def update_chair(request, id):
     form = ChairForm(request.POST, instance=chair)
     if form.is_valid():
         form.save()
-        return redirect('/tasks')
+        return redirect('/data')
     context = {
         'chair': chair
     }
@@ -1099,35 +1109,36 @@ def update_ass(request, id):
             first = False
 
         form.save()
-        return redirect('/assignments')
+        return redirect('/data')
     context = {
         'assignment': assignment
     }
     return render(request, 'edit_ass.html', context)
 
 
+# DELETE OBJECTS
 def delete_emp(request, id):
     employee = Employee.objects.get(id=id)
     employee.delete()
-    return redirect('/employee')
+    return redirect('/data')
 
 
 def delete_proj(request, id):
     project = Project.objects.get(id=id)
     project.delete()
-    return redirect('/tasks')
+    return redirect('/data')
 
 
 def delete_pos(request, id):
     position = Position.objects.get(id=id)
     position.delete()
-    return redirect('/tasks')
+    return redirect('/data')
 
 
 def delete_chair(request, id):
     chair = Chair.objects.get(id=id)
     chair.delete()
-    return redirect('/tasks')
+    return redirect('/data')
 
 
 def delete_ass(request, id):
@@ -1175,158 +1186,4 @@ def delete_ass(request, id):
         duration -= 1
 
     assignment.delete()
-    return redirect('/assignments')
-
-
-def test(request, id):
-    employees = Employee.objects.all()
-    assignments_per_months = AssignmentPerMonth.objects.all()
-    projects = Project.objects.all()
-    chairs = Chair.objects.all()
-    positions = Position.objects.all()
-    tasks = Task.objects.all()
-    employee_tasks = []
-    employee_chairs_tasks = []
-    employee_positions_tasks = []
-    tasks_sum = []
-
-    month_dict = {
-        '1': 'January',
-        '2': 'February',
-        '3': 'March',
-        '4': 'April',
-        '5': 'May',
-        '6': 'June',
-        '7': 'July',
-        '8': 'August',
-        '9': 'September',
-        '10': 'October',
-        '11': 'November',
-        '12': 'December',
-    }
-    if request.method == "POST":
-        start = request.POST.get('start_month')
-        start_year, start_month = str(start).split('-')
-        for month_obj in Month.objects.all():
-            if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
-                month_id = month_obj.id
-                return redirect('/employee_task/{}'.format(month_id))
-        return redirect('/employee_task/')
-
-    month = Month.objects.get(id=id)
-
-    # Loop through Project Tasks
-    for employee in employees:
-        employee_prj_hours = []
-        employee_prj_hours_id = []
-        for project in projects:
-            for assignment_per_month in assignments_per_months:
-                if assignment_per_month.task.id == project.id and assignment_per_month.employee.id == employee.id and assignment_per_month.month == month:
-                    employee_prj_hours.append(
-                        (int(round(assignment_per_month.percentage, 2) * 100), assignment_per_month.id,
-                         assignment_per_month.responsibility))
-                    employee_prj_hours_id.append(project.id)
-        employee_list_project = []
-        for project in projects:
-            if project.id in employee_prj_hours_id:
-                employee_list_project.append(employee_prj_hours[employee_prj_hours_id.index(project.id)])
-            else:
-                employee_list_project.append('-')
-        employee_tasks.append(employee_list_project)
-
-    # Loop through Chair Tasks
-    for employee in employees:
-        employee_ch_hours = []
-        employee_ch_hours_id = []
-        for chair in chairs:
-            for assignment_per_months in assignments_per_months:
-                if assignment_per_months.task.id == chair.id and assignment_per_months.employee.id == employee.id and assignment_per_months.month == month:
-                    employee_ch_hours.append(
-                        (int(round(assignment_per_months.percentage, 2) * 100), assignment_per_months.id,
-                         assignment_per_months.responsibility))
-                    employee_ch_hours_id.append(chair.id)
-        employee_list_chair = []
-        for chair in chairs:
-            if chair.id in employee_ch_hours_id:
-                employee_list_chair.append(employee_ch_hours[employee_ch_hours_id.index(chair.id)])
-            else:
-                employee_list_chair.append('-')
-        employee_chairs_tasks.append(employee_list_chair)
-    i = 0
-    # And append information to list
-    while i < len(employee_tasks):
-        j = 0
-        while j < len(employee_chairs_tasks[i]):
-            employee_tasks[i].append(employee_chairs_tasks[i][j])
-            j = j + 1
-        i = i + 1
-
-    # Loop through Position Tasks
-    for employee in employees:  # For Project start
-        employee_pos_hours = []
-        employee_pos_hours_id = []
-        for position in positions:
-            for assignment_per_months in assignments_per_months:
-                if assignment_per_months.task.id == position.id and assignment_per_months.employee.id == employee.id and assignment_per_months.month == month:
-                    employee_pos_hours.append(
-                        (int(round(assignment_per_months.percentage, 2) * 100), assignment_per_months.id,
-                         assignment_per_months.responsibility))
-                    employee_pos_hours_id.append(position.id)
-        employee_list_position = []
-        for position in positions:
-            if position.id in employee_pos_hours_id:
-                employee_list_position.append(employee_pos_hours[employee_pos_hours_id.index(position.id)])
-            else:
-                employee_list_position.append('-')
-        employee_positions_tasks.append(employee_list_position)
-    ii = 0
-    # And append information to list
-    while ii < len(employee_tasks):
-        jj = 0
-        while jj < len(employee_positions_tasks[ii]):
-            employee_tasks[ii].append(employee_positions_tasks[ii][jj])
-            jj = jj + 1
-        ii = ii + 1
-
-    # Used ressources, summed up for each project
-    for project in projects:
-        sum = 0
-        for assignment_per_months in assignments_per_months:
-            if assignment_per_months.task.id == project.id and assignment_per_months.month == month:
-                sum += assignment_per_months.percentage
-        ratio = sum / project.ressources
-        tasks_sum.append((int(round(sum, 2) * 100), int(round(project.ressources, 2)) * 100, ratio))
-
-    # Append (employee, workload)-Tuple to employee_infos list
-    employee_infos = []
-    for employee in employees:
-        employee_sum = 0
-        for task in tasks:
-            for assignment in Assignment.objects.all():
-                if assignment.task.id == task.id and assignment.employee.id == employee.id:
-                    employee_sum += assignment.percentage
-        workload = employee_sum / employee.capacity
-        employee_infos.append(
-            (employee, int(round(employee_sum, 2) * 100), int(round(employee.capacity, 2) * 100), workload))
-
-    date = timezone.now()
-    current_year, current_month, _ = str(date).split('-')
-    current_month_name = month_dict[str(int(current_month))]
-    today = Month.objects.get(month=current_month_name, year=current_year)
-    previous_month = Month.objects.get(id=id - 1)
-    next_month = Month.objects.get(id=id + 1)
-    context = {
-        'employees': employees,
-        'assignments': Assignment.objects.all(),
-        'projects': projects,
-        'chairs': chairs,
-        'positions': positions,
-        'employeetasks': employee_tasks,
-        'tasks_sum': tasks_sum,
-        'employee_infos': employee_infos,
-        'month': month,
-        'previous_month': previous_month,
-        'next_month': next_month,
-        'today': today,
-    }
-    return render(request, 'employee_task_testpage.html', context)
+    return redirect('/data')

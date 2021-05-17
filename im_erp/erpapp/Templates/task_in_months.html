@@ -38,7 +38,11 @@
             <tr>
                 <td> {{ emp_info.0 }} </td>
             {% for assignment in emp_info.1 %}
+                {% if assignment == '-' %}
                 <td> {{ assignment }} </td>
+                {% else %}
+                <td> {{ assignment }}% </td>
+                {% endif %}
             {% endfor %}
             </tr>
         {% endfor %}

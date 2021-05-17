@@ -7,10 +7,11 @@
         <form method="POST" class="post-form">
             {% csrf_token %}
             <div class="form-group row">
-                <label class="col-sm-2 col-form-label">Choose start month:</label>
-                <div class="col-sm-4">
+                <div class="col-4">
                     <input type="month" name="start_month" id="start_month" class="form-control">
-                    <input type="submit" class="btn btn-primary">
+                </div>
+                <div class="col-4">
+                    <input type="submit" value="Choose Month" class="btn btn-primary">
                 </div>
             </div>
         </form>
@@ -50,7 +51,7 @@
                         <tbody>
                         {% for employee in employees %}
                         <tr style="text-align: right">
-                            <td><a href="/employee" style="color: #000000">{{ employee }}</a></td>
+                            <td><a href="/data" style="color: #000000">{{ employee }}</a></td>
                         </tr>
                         {% endfor %}
                         </tbody>
