@@ -83,19 +83,19 @@
                 {% if task_info.3 > 1.0 %}
                 <th class="col-xs-1" style="text-align: center">
                     <a href="/task_in_months/{{ task_info.0.id }}/{{ month.id }}" style="color: #000000; background-color: #ff726f">{{ task_info.0 }}</a>
-                    ({{ task_info.2 }}%)
+                    <br>({{ task_info.2 }}%)
                     <a href="/edit_task/{{ task_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
                 </th>
                 {% elif task_info.3 > 0.8 %}
                 <th class="col-xs-1" style="text-align: center">
                     <a href="/task_in_months/{{ task_info.0.id }}/{{ month.id }}" style="color: #000000; background-color: #ffc966">{{ task_info.0 }}</a>
-                    ({{ task_info.2 }}%)
+                    <br>({{ task_info.2 }}%)
                     <a href="/edit_task/{{ task_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
                 </th>
                 {% else %}
                 <th class="col-xs-1" style="text-align: center">
                     <a href="/task_in_months/{{ task_info.0.id }}/{{ month.id }}" style="color: #000000; background-color:#90ee90">{{ task_info.0 }}</a>
-                    ({{ task_info.2 }}%)
+                    <br>({{ task_info.2 }}%)
                     <a href="/edit_task/{{ task_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
                 </th>
                 {% endif %}

@@ -187,6 +187,7 @@ def employee_task(request, id):
         employee_title.append(assignment_infos_chair)
 
         employee_rows.append(employee_title)
+    print("employee_rows:, ", employee_rows)
 
     # get all percentages sums for all tasks
     task_sums = []
@@ -308,7 +309,7 @@ def employee_in_months(request, emp_id, month_id):
         for month in Month.objects.all():
             for assignment_per_months in AssignmentPerMonth.objects.all():  # set assignment_percentages to right month
                 if task.id == assignment_per_months.task.id and employee.id == assignment_per_months.employee.id and month == assignment_per_months.month:
-                    assignments[i] = assignment_per_months.percentage
+                    assignments[i] = int(round(assignment_per_months.percentage,2) * 100)
             i = i + 1
         task_info.append(assignments[month_id - 1:month_id + 11])
         tasks_in_months.append(task_info)
@@ -394,7 +395,7 @@ def task_in_months(request, tsk_id, month_id):
         for month in Month.objects.all():
             for assignment_per_months in AssignmentPerMonth.objects.all():  # set assignment_percentages to right month
                 if employee.id == assignment_per_months.employee.id and task.id == assignment_per_months.task.id and month == assignment_per_months.month:
-                    assignments[i] = assignment_per_months.percentage
+                    assignments[i] = int(round(assignment_per_months.percentage,2) * 100)
             i = i + 1
         employee_info.append(assignments[month_id - 1:month_id + 11])
         emps_in_months.append(employee_info)
@@ -651,7 +652,11 @@ def add_new_proj(request):
             if datetime.date(datetime.strptime(form.data['begin'], date_format)) > \
                     datetime.date(datetime.strptime(form.data['end'], date_format)):
                 messages.error(request, "The Project ends before it started")
-                return redirect('/add_new_ass')
+                return redirect('/add_new_proj')
+            for project in Project.objects.all():
+                if project.title == form.data['title']:
+                    messages.error(request, "The Project " + form.data['title'] + " already exists")
+                    return redirect('/add_new_proj')
 
             form.save()
             return redirect('/tasks')
@@ -667,6 +672,11 @@ def add_new_pos(request):
     if request.method == "POST":
         form = PositionForm(request.POST)
         if form.is_valid():
+
+            for position in Position.objects.all():
+                if position.title == form.data['title']:
+                    messages.error(request, "The Position " + form.data['title'] + " already exists")
+                    return redirect('/add_new_pos')
             form.save()
             return redirect('/tasks')
     else:
@@ -681,6 +691,12 @@ def add_new_chair(request):
     if request.method == "POST":
         form = ChairForm(request.POST)
         if form.is_valid():
+
+            for chair in Chair.objects.all():
+                if chair.title == form.data['title']:
+                    messages.error(request, "The Chair " + form.data['title'] +" already exists")
+                    return redirect('/add_new_chair')
+
             form.save()
             return redirect('/tasks')
     else:
@@ -795,12 +811,11 @@ def add_new_ass(request):
                 else:
                     responsibility = False
 
-                percentage = float(form.data['percentage'])
+                percentage = form.data['percentage']
                 if first:
-                    percentage = percentage * ((30 - int(start_day)) / 30)
+                    percentage = float(percentage) * (float(start_day) / 30.0)
                 if duration == 0:
-                    percentage = percentage * (int(end_day) / 30)
-                    print(percentage, int(end_day), int(end_day) / 30)
+                    percentage = float(percentage) * (float(end_day) / 30.0)
 
                 assignment_per_month = AssignmentPerMonth(employee=emp, task=task, month=month_obj, duration=duration,
                                                           percentage=percentage,
@@ -1064,10 +1079,9 @@ def update_ass(request, id):
             print('Assignment:', ass)
             ass.percentage = percentage
             if first:
-                ass.percentage = ass.percentage * ((30 - int(start_day)) / 30)
+                ass.percentage = percentage * (start_day / 30)
             if duration == 0:
-                ass.percentage = ass.percentage * (int(end_day) / 30)
-                print(ass.percentage, int(end_day), int(end_day)/30)
+                ass.percentage = percentage * (end_day / 30)
 
             ass.responsibility = responsibility
             ass.save()
