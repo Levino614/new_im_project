@@ -302,36 +302,21 @@
         </div>
     </div>
 </div>
-<!-- Spacing -->
-<div class="col-1">
-
-</div>
 <!-- Sidebar -->
 <div class="col-3">
-    <div class="row">
-        <h4>Warning(s):</h4>
-        <!-- Loop thorugh project workloads and check if it's too big -->
-        {% for project_info in project_infos %}
-        {% if project_info.0 > project_info.1 %}
+    <h4>Warning(s):</h4>
+    {% if warnings_length > 0 %}
+
+        {% for warning in warnings %}
         <div class="alert alert-danger" role="alert">
-            {{ project_info.2 }} is currently using too many ressources! ({{ project_info.3 }}%)
+            {{ warning }}
         </div>
-        {% endif %}
         {% endfor %}
-        <!-- Loop thorugh project workloads and check if it's too big -->
-        {% for employee_info in employee_infos %}
-        {% if employee_info.1 > employee_info.2 %}
-        <div class="alert alert-danger" role="alert">
-            {{ employee_info.0 }} is currently working too many hours! ({{ employee_info.3 }}%)
-        </div>
-        {% endif %}
-        {% endfor %}
-    </div>
-    <div class="row">
-        <h4>Recommendation(s):</h4>
+    {% else %}
         <div class="alert alert-success" role="alert">
-            Yet to be implemented
+            Everything looks fine!
         </div>
-    </div>
+    {% endif %}
+
 </div>
 {% endblock content %}

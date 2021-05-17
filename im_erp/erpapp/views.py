@@ -40,6 +40,14 @@ def data(request):
             overload = int(round((employee_sum - employee.capacity), 2) * 100)
             employee_infos.append((employee, employee_sum, employee.capacity, overload))
 
+    warnings = []
+    for project_info in project_infos:
+        if project_info[0] > project_info[1]:
+            warnings.append('{} is currently using too many ressources! ({}%)'.format(project_info[2], project_info[3]))
+    for employee_info in employee_infos:
+        if employee_info[1] > employee_info[2]:
+            warnings.append('{} is currently working too many hours! ({}%)'.format(employee_info[0], employee_info[3]))
+    warnings_length = len(warnings)
     context = {
         'employees': employees,
         'projects': projects,
@@ -48,6 +56,8 @@ def data(request):
         'project_infos': project_infos,
         'employee_infos': employee_infos,
         'assignments': assignments,
+        'warnings': warnings,
+        'warnings_length': warnings_length,
     }
     return render(request, 'data.html', context)
 

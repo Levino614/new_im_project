@@ -2,239 +2,206 @@
 {% block title %}SmartRnD - Employee/Task{% endblock title %}
 
 {% block content %}
-<!-- Color Keys Style Sheet -->
-<style>
-#rectangle {
-    width:20px;
-    height:20px;
-}
-</style>
-<div class="col-8">
-    <!-- Select Month form -->
-    <div class="row">
-        <form method="POST" class="post-form">
-            {% csrf_token %}
-            <div class="form-group row">
-                <div class="col-4">
-                    <input type="month" name="start_month" id="start_month" class="form-control">
-                </div>
-                <div class="col-4">
-                    <input type="submit" value="Choose Month" class="btn btn-primary">
-                </div>
+<!-- Select Month form -->
+<div class="row">
+    <form method="POST" class="post-form">
+        {% csrf_token %}
+        <div class="form-group row">
+            <div class="col-4">
+                <input type="month" name="start_month" id="start_month" class="form-control">
             </div>
-        </form>
-    </div>
-    <!-- Heading and month switcher <- today -> -->
-    <div class="row">
-        <div class="col-3">
-            <h3>Assignments for: </h3>
-        </div>
-        <div class="col-9">
-            <div class="row">
-                <div class="col-9">
-                    <h3>{{ month.name }}</h3>
-                </div>
-                <div class="col-3">
-                    <div class="btn-group" role="group" aria-label="Basic example">
-                        <a class="btn btn-primary btn-sm" href="{{ previous_month.id }}" role="button"><</a>
-                        <a class="btn btn-primary btn-sm" href="{{ today.id }}" role="button">Today</a>
-                        <a class="btn btn-primary btn-sm" href="{{ next_month.id }}" role="button">></a>
-                    </div>
-                </div>
+            <div class="col-4">
+                <input type="submit" value="Choose Month" class="btn btn-primary">
             </div>
         </div>
+    </form>
+</div>
+<!-- Heading and month switcher <- today -> -->
+<div class="row">
+    <div class="col-3">
+        <h3>Assignments for: </h3>
     </div>
-    <!-- Table -->
-    <div class="row">
+    <div class="col-9">
         <div class="row">
-            <!-- Nested Table -->
-            <table class="table table-responsive table-striped table-bordered table-light" width="100%" style="table-layout: auto">
-                <!-- Color Key -->
-                <caption>
-                    <h4>Color Key:</h4>
-                    <div class="col-6">
-                        <div class="row">
-                            <div class="col-1" id="red" style="background-color: #ff726f"></div>
-                            <div class="col-11">: Employee Workload > 100%</div>
-                        </div>
-                        <div class="row">
-                            <div class="col-1" id="orange" style="background-color: #ffc966"></div>
-                            <div class="col-11">: Employee Workload > 80%</div>
-                        </div>
-                        <div class="row">
-                            <div class="col-1" id="green" style="background-color: #90ee90"></div>
-                            <div class="col-11">: Employee Workload ≤ 80%</div>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="row">
-                            <div class="col-1" id="yellow" style="background-color: #ffff94"></div>
-                            <div class="col-11">: Employee is responsible</div>
-                        </div>
-                        <div class="row">
-                            <div class="col-1" id="blue" style="background-color: #add8e6"></div>
-                            <div class="col-11">: Employee is not responsible</div>
-                        </div>
-                    </div>
-                </caption>
-                <thead>
-                <tr>
-                    <th style="text-align: right">Employee</th>
-                    <th style="text-align: left">Sum / (Capacity)</th>
-                    {% for task_info in task_infos %}
-                    {% if task_info.3 > 1.0 %}
-                    <th class="col-xs-1" style="text-align: center">
-                        <a href="/task_in_months/{{ task_info.0.id }}/{{ month.id }}" style="color: #000000; background-color: #ff726f">{{ task_info.0 }}</a>
-                        <br>({{ task_info.2 }}%)
-                        <a href="/edit_task/{{ task_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
-                    </th>
-                    {% elif task_info.3 > 0.8 %}
-                    <th class="col-xs-1" style="text-align: center">
-                        <a href="/task_in_months/{{ task_info.0.id }}/{{ month.id }}" style="color: #000000; background-color: #ffc966">{{ task_info.0 }}</a>
-                        <br>({{ task_info.2 }}%)
-                        <a href="/edit_task/{{ task_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
-                    </th>
-                    {% else %}
-                    <th class="col-xs-1" style="text-align: center">
-                        <a href="/task_in_months/{{ task_info.0.id }}/{{ month.id }}" style="color: #000000; background-color:#90ee90">{{ task_info.0 }}</a>
-                        <br>({{ task_info.2 }}%)
-                        <a href="/edit_task/{{ task_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
-                    </th>
-                    {% endif %}
-                    {% endfor %}
-                    <th class="border-0" style="background-color:#fff">
-                        <div class="dropdown">
-                          <a class="btn btn-primary btn-xs dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
-                            Add New
-                          </a>
-                          <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                            <li><a class="dropdown-item" href="/add_new_proj">Add New Project</a></li>
-                            <li><a class="dropdown-item" href="/add_new_pos">Add New Position</a></li>
-                            <li><a class="dropdown-item" href="/add_new_chair">Add New Chair Task</a></li>
-                          </ul>
-                        </div>
-                    </th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for employee_info, proj_percentages, pos_percentages, chair_percentages in employee_rows %}
-                <!-- employee_info = [fullname, summed_workload, workload_percentage] -->
-                <tr style="text-align: right">
-                    {% if employee_info.3 > 1.0 %}
-                    <td>
-                        <a href="/employee_in_months/{{ employee_info.0.id }}" style="color: #000000; background-color: #ff726f">{{ employee_info.0 }}</a>
-                        <a href="/edit_emp/{{ employee_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
-                    </td>
-                    {% elif employee_info.3 > 0.8 %}
-                    <td>
-                        <a href="/employee_in_months/{{ employee_info.0.id }}" style="color: #000000; background-color: #ffc966">{{ employee_info.0 }}</a>
-                        <a href="/edit_emp/{{ employee_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
-                    </td>
-                    {% else %}
-                    <td>
-                        <a href="/employee_in_months/{{ employee_info.0.id }}" style="color: #000000; background-color:#90ee90">{{ employee_info.0 }}</a>
-                        <a href="/edit_emp/{{ employee_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
-                    </td>
-                    {% endif %}
-                    <td style="text-align: left">{{ employee_info.1 }}% ({{ employee_info.2 }}%)</td>
-
-                    {% for percentage in proj_percentages %}
-                    {% if percentage.0 == '-' %}
-                    <td class="align-middle" style="text-align: center"><a href="/add_new_ass/"
-                                                      style="color:#000000">{{ percentage.0 }}</a></td>
-                    {% else %}
-                    {% if percentage.1 == True %}
-                    <td class="align-middle" style="text-align: center">
-                        <div style="color: #000000; background-color: #ffff94">{{ percentage.0 }}%</div>
-                    </td>
-                    {% else %}
-                    <td class="align-middle" style="text-align: center">
-                        <div style="color: #000000; background-color: #add8e6">{{ percentage.0 }}%</div>
-                    </td>
-                    {% endif %}
-                    {% endif %}
-                    {% endfor %}
-
-                    {% for percentage in pos_percentages %}
-                    {% if percentage.0 == '-' %}
-                    <td class="align-middle" style="text-align: center"><a href="/add_new_ass/"
-                                                      style="color:#000000">{{ percentage.0 }}</a></td>
-                    {% else %}
-                    {% if percentage.1 == True %}
-                    <td class="align-middle" style="text-align: center">
-                        <div style="color: #000000; background-color: #ffff94">{{ percentage.0 }}%</div>
-                    </td>
-                    {% else %}
-                    <td class="align-middle" style="text-align: center">
-                        <div style="color: #000000; background-color: #add8e6">{{ percentage.0 }}%</div>
-                    </td>
-                    {% endif %}
-                    {% endif %}
-                    {% endfor %}
-
-                    {% for percentage in chair_percentages %}
-                    {% if percentage.0 == '-' %}
-                    <td class="align-middle" style="text-align: center"><a href="/add_new_ass/"
-                                                      style="color:#000000">{{ percentage.0 }}</a></td>
-                    {% else %}
-                    {% if percentage.1 == True %}
-                    <td class="align-middle" style="text-align: center">
-                        <div style="color: #000000; background-color: #ffff94">{{ percentage.0 }}%</div>
-                    </td>
-                    {% else %}
-                    <td class="align-middle" style="text-align: center">
-                        <div style="color: #000000; background-color: #add8e6">{{ percentage.0 }}%</div>
-                    </td>
-                    {% endif %}
-                    {% endif %}
-                    {% endfor %}
-                </tr>
-
-                {% endfor %}
-                <tr style="text-align: right">
-                    <td>
-                        <a href="/add_new_emp" class="btn btn-primary btn-xs">Add New</a>
-                    </td>
-                    <td>Sum / <br>(Total&nbsp;Available):</td>
-                    {% for task_sum in task_sums %}
-                    <td style="text-align: center">{{ task_sum.0 }}%<br>({{ task_sum.1 }}%)</td>
-                    {% endfor %}
-                </tr>
-                </tbody>
-            </table>
+            <div class="col-9">
+                <h3>{{ month.name }}</h3>
+            </div>
+            <div class="col-3">
+                <div class="btn-group" role="group" aria-label="Basic example">
+                    <a class="btn btn-primary btn-sm" href="{{ previous_month.id }}" role="button"><</a>
+                    <a class="btn btn-primary btn-sm" href="{{ today.id }}" role="button">Today</a>
+                    <a class="btn btn-primary btn-sm" href="{{ next_month.id }}" role="button">></a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-<!-- Spacing -->
-<div class="col-1">
+<!-- Table -->
+<div class="row">
+    <table class="table table-responsive table-striped table-bordered table-light horizontal-scrollable text-center">
+        <!-- Color Key -->
+        <caption>
+            <h4>Color Key:</h4>
+            <div class="col-6">
+                <div class="row">
+                    <div class="col-1" id="red" style="background-color: #ff726f"></div>
+                    <div class="col-11">: Employee Workload > 100%</div>
+                </div>
+                <div class="row">
+                    <div class="col-1" id="orange" style="background-color: #ffc966"></div>
+                    <div class="col-11">: Employee Workload > 80%</div>
+                </div>
+                <div class="row">
+                    <div class="col-1" id="green" style="background-color: #90ee90"></div>
+                    <div class="col-11">: Employee Workload ≤ 80%</div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="row">
+                    <div class="col-1" id="yellow" style="background-color: #ffff94"></div>
+                    <div class="col-11">: Employee is responsible</div>
+                </div>
+                <div class="row">
+                    <div class="col-1" id="blue" style="background-color: #add8e6"></div>
+                    <div class="col-11">: Employee is not responsible</div>
+                </div>
+            </div>
+        </caption>
+        <thead>
+        <tr>
+            <th style="text-align: right">Employee</th>
+            <th style="text-align: left">Sum / (Capacity)</th>
+            {% for task_info in task_infos %}
+            {% if task_info.3 > 1.0 %}
+            <th class="col-xs-1" style="text-align: center">
+                <a href="/task_in_months/{{ task_info.0.id }}/{{ month.id }}"
+                   style="color: #000000; background-color: #ff726f">{{ task_info.0 }}</a>
+                <br>({{ task_info.2 }}%)
+                <a href="/edit_task/{{ task_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
+            </th>
+            {% elif task_info.3 > 0.8 %}
+            <th class="col-xs-1" style="text-align: center">
+                <a href="/task_in_months/{{ task_info.0.id }}/{{ month.id }}"
+                   style="color: #000000; background-color: #ffc966">{{ task_info.0 }}</a>
+                <br>({{ task_info.2 }}%)
+                <a href="/edit_task/{{ task_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
+            </th>
+            {% else %}
+            <th class="col-xs-1" style="text-align: center">
+                <a href="/task_in_months/{{ task_info.0.id }}/{{ month.id }}"
+                   style="color: #000000; background-color:#90ee90">{{ task_info.0 }}</a>
+                <br>({{ task_info.2 }}%)
+                <a href="/edit_task/{{ task_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
+            </th>
+            {% endif %}
+            {% endfor %}
+            <th class="border-0" style="background-color:#fff">
+                <div class="dropdown">
+                    <a class="btn btn-primary btn-xs dropdown-toggle" href="#" role="button"
+                       id="dropdownMenuLink"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        Add New
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <li><a class="dropdown-item" href="/add_new_proj">Add New Project</a></li>
+                        <li><a class="dropdown-item" href="/add_new_pos">Add New Position</a></li>
+                        <li><a class="dropdown-item" href="/add_new_chair">Add New Chair Task</a></li>
+                    </ul>
+                </div>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for employee_info, proj_percentages, pos_percentages, chair_percentages in employee_rows %}
+        <tr style="text-align: right">
+            {% if employee_info.3 > 1.0 %}
+            <td>
+                <a href="/employee_in_months/{{ employee_info.0.id }}"
+                   style="color: #000000; background-color: #ff726f">{{ employee_info.0 }}</a>
+                <a href="/edit_emp/{{ employee_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
+            </td>
+            {% elif employee_info.3 > 0.8 %}
+            <td>
+                <a href="/employee_in_months/{{ employee_info.0.id }}"
+                   style="color: #000000; background-color: #ffc966">{{ employee_info.0 }}</a>
+                <a href="/edit_emp/{{ employee_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
+            </td>
+            {% else %}
+            <td>
+                <a href="/employee_in_months/{{ employee_info.0.id }}"
+                   style="color: #000000; background-color:#90ee90">{{ employee_info.0 }}</a>
+                <a href="/edit_emp/{{ employee_info.0.id }}" class="btn btn-primary btn-xs">Edit</a>
+            </td>
+            {% endif %}
+            <td style="text-align: left">{{ employee_info.1 }}% ({{ employee_info.2 }}%)</td>
 
-</div>
-<!-- Sidebar -->
-<div class="col-3">
-    <div class="row">
-        <h4>Warning(s):</h4>
-        <!-- Loop thorugh project workloads and check if it's too big -->
-        {% for project_info in project_infos %}
-        {% if project_info.0 > project_info.1 %}
-        <div class="alert alert-danger" role="alert">
-            {{ project_info.2 }} is currently using too many ressources! ({{ project_info.3 }}%)
-        </div>
-        {% endif %}
+            {% for percentage in proj_percentages %}
+            {% if percentage.0 == '-' %}
+            <td class="align-middle" style="text-align: center"><a href="/add_new_ass/"
+                                                                   style="color:#000000">{{ percentage.0 }}</a>
+            </td>
+            {% else %}
+            {% if percentage.1 == True %}
+            <td class="align-middle" style="text-align: center">
+                <div style="color: #000000; background-color: #ffff94">{{ percentage.0 }}%</div>
+            </td>
+            {% else %}
+            <td class="align-middle" style="text-align: center">
+                <div style="color: #000000; background-color: #add8e6">{{ percentage.0 }}%</div>
+            </td>
+            {% endif %}
+            {% endif %}
+            {% endfor %}
+
+            {% for percentage in pos_percentages %}
+            {% if percentage.0 == '-' %}
+            <td class="align-middle" style="text-align: center"><a href="/add_new_ass/"
+                                                                   style="color:#000000">{{ percentage.0 }}</a>
+            </td>
+            {% else %}
+            {% if percentage.1 == True %}
+            <td class="align-middle" style="text-align: center">
+                <div style="color: #000000; background-color: #ffff94">{{ percentage.0 }}%</div>
+            </td>
+            {% else %}
+            <td class="align-middle" style="text-align: center">
+                <div style="color: #000000; background-color: #add8e6">{{ percentage.0 }}%</div>
+            </td>
+            {% endif %}
+            {% endif %}
+            {% endfor %}
+
+            {% for percentage in chair_percentages %}
+            {% if percentage.0 == '-' %}
+            <td class="align-middle" style="text-align: center"><a href="/add_new_ass/"
+                                                                   style="color:#000000">{{ percentage.0 }}</a>
+            </td>
+            {% else %}
+            {% if percentage.1 == True %}
+            <td class="align-middle" style="text-align: center">
+                <div style="color: #000000; background-color: #ffff94">{{ percentage.0 }}%</div>
+            </td>
+            {% else %}
+            <td class="align-middle" style="text-align: center">
+                <div style="color: #000000; background-color: #add8e6">{{ percentage.0 }}%</div>
+            </td>
+            {% endif %}
+            {% endif %}
+            {% endfor %}
+        </tr>
         {% endfor %}
-        <!-- Loop thorugh project workloads and check if it's too big -->
-        {% for employee_info in employee_infos %}
-        {% if employee_info.1 > employee_info.2 %}
-        <div class="alert alert-danger" role="alert">
-            {{ employee_info.0 }} is currently working too many hours! ({{ employee_info.3 }}%)
-        </div>
-        {% endif %}
-        {% endfor %}
-    </div>
-    <div class="row">
-        <h4>Recommendation(s):</h4>
-        <div class="alert alert-success" role="alert">
-            Yet to be implemented
-        </div>
-    </div>
+        </tbody>
+        <tfoot>
+        <tr style="text-align: right">
+            <td>
+                <a href="/add_new_emp" class="btn btn-primary btn-xs">Add New</a>
+            </td>
+            <td>Sum / <br>(Total&nbsp;Available):</td>
+            {% for task_sum in task_sums %}
+            <td style="text-align: center">{{ task_sum.0 }}%<br>({{ task_sum.1 }}%)</td>
+            {% endfor %}
+        </tr>
+        </tfoot>
+    </table>
 </div>
 {% endblock content %}
