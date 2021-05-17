@@ -55,10 +55,11 @@ class Employee(models.Model):
 
     class Meta:
         db_table = "employee"
+        unique_together = ('firstname', 'lastname')
 
 
 class Task(models.Model):
-    title = models.CharField('Title', max_length=50, default='Title')
+    title = models.CharField('Title', max_length=50, default='Title', unique=True)
     description = models.CharField('Description', max_length=2400, default='Describe the task!')
     assigned_employees_on_month = models.ManyToManyField(Employee, through='AssignmentPerMonth')
 
@@ -121,6 +122,7 @@ class AssignmentPerMonth(models.Model):
 
     class Meta:
         db_table = "assignment_per_month"
+        unique_together = ('employee', 'task')
 
 
 class Assignment(models.Model):
@@ -137,3 +139,4 @@ class Assignment(models.Model):
 
     class Meta:
         db_table = "assignment"
+        unique_together = ('employee', 'task')

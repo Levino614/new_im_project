@@ -617,6 +617,14 @@ def task_time(request, id):
 def add_new_emp(request):
     if request.method == "POST":
         form = EmployeeForm(request.POST)
+
+        # duplicates
+        employee_firstname = form.data['firstname']
+        employee_lastname = form.data['lastname']
+        for employee in Employee.objects.all():
+            if employee.firstname == employee_firstname and employee.lastname == employee_lastname:
+                messages.error(request, "Employee already exists.")
+                return redirect('/add_new_emp')
         if form.is_valid():
 
             # Restrictions
@@ -626,12 +634,6 @@ def add_new_emp(request):
                 messages.error(request, "The Employees contract expires before he got hired")
                 return redirect('/add_new_ass')
 
-            employee_firstname = form.data['firstname']
-            employee_lastname = form.cleaned_data['lastname']
-            for employee in Employee.objects.all():
-                if employee.firstname == employee_firstname and employee.lastname == employee_lastname:
-                    messages.error(request, "Employee already exists.")
-                    return redirect('/add_new_emp')
             form.save()
             return redirect('/employee')
     else:
@@ -645,18 +647,17 @@ def add_new_emp(request):
 def add_new_proj(request):
     if request.method == "POST":
         form = ProjectForm(request.POST)
+        for project in Project.objects.all():
+            if project.title == form.data['title']:
+                messages.error(request, "The Project " + form.data['title'] + " already exists")
+                return redirect('/add_new_proj')
         if form.is_valid():
-
             # Restrictions
             date_format = "%Y-%m-%d"
             if datetime.date(datetime.strptime(form.data['begin'], date_format)) > \
                     datetime.date(datetime.strptime(form.data['end'], date_format)):
                 messages.error(request, "The Project ends before it started")
                 return redirect('/add_new_proj')
-            for project in Project.objects.all():
-                if project.title == form.data['title']:
-                    messages.error(request, "The Project " + form.data['title'] + " already exists")
-                    return redirect('/add_new_proj')
 
             form.save()
             return redirect('/tasks')
@@ -671,12 +672,13 @@ def add_new_proj(request):
 def add_new_pos(request):
     if request.method == "POST":
         form = PositionForm(request.POST)
+
+        for position in Position.objects.all():
+            if position.title == form.data['title']:
+                messages.error(request, "The Position " + form.data['title'] + " already exists")
+                return redirect('/add_new_pos')
         if form.is_valid():
 
-            for position in Position.objects.all():
-                if position.title == form.data['title']:
-                    messages.error(request, "The Position " + form.data['title'] + " already exists")
-                    return redirect('/add_new_pos')
             form.save()
             return redirect('/tasks')
     else:
@@ -690,12 +692,14 @@ def add_new_pos(request):
 def add_new_chair(request):
     if request.method == "POST":
         form = ChairForm(request.POST)
+
+        for chair in Chair.objects.all():
+            if chair.title == form.data['title']:
+                messages.error(request, "The Chair " + form.data['title'] + " already exists")
+                return redirect('/add_new_chair')
+
         if form.is_valid():
 
-            for chair in Chair.objects.all():
-                if chair.title == form.data['title']:
-                    messages.error(request, "The Chair " + form.data['title'] +" already exists")
-                    return redirect('/add_new_chair')
 
             form.save()
             return redirect('/tasks')
@@ -711,13 +715,13 @@ def add_new_ass(request):
     months = Month.objects.all()
     if request.method == "POST":
         form = AssignmentForm(request.POST)
+        # CHECK FOR DUPLICATES
+        for assignment in Assignment.objects.all():
+            if str(assignment.employee.id) == form.data['employee'] and \
+                    str(assignment.task.id) == form.data['task']:
+                messages.error(request, "Emplyoee is already assigned to this task.")
+                return redirect('/add_new_ass')
         if form.is_valid():
-            # CHECK FOR DUPLICATES
-            for assignment in Assignment.objects.all():
-                if str(assignment.employee.id) == form.data['employee'] and \
-                        str(assignment.task.id) == form.data['task']:
-                    messages.error(request, "Emplyoee is already assigned to this task.")
-                    return redirect('/add_new_ass')
             emp = Employee.objects.get(id=form.data['employee'])
             tsk = Task.objects.get(id=form.data['task'])
             date_format = "%Y-%m-%d"
