@@ -1108,7 +1108,7 @@ def update_ass(request, id):
             print('Assignment:', ass)
             ass.percentage = float(percentage)
             if first:
-                ass.percentage = float(percentage) * (31.0 - float(start_day) / 30.0)
+                ass.percentage = float(percentage) * ((31.0 - float(start_day)) / 30.0)
             if duration == 0:
                 ass.percentage = float(percentage) * (float(end_day) / 30.0)
 
