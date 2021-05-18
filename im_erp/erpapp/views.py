@@ -699,7 +699,6 @@ def add_new_pos(request):
 def add_new_chair(request):
     if request.method == "POST":
         form = ChairForm(request.POST)
-        if form.is_valid():
 
         for chair in Chair.objects.all():
             if chair.title == form.data['title']:
@@ -707,7 +706,6 @@ def add_new_chair(request):
                 return redirect('/add_new_chair')
 
         if form.is_valid():
-
 
             form.save()
             return redirect('/data')

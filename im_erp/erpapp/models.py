@@ -122,7 +122,7 @@ class AssignmentPerMonth(models.Model):
 
     class Meta:
         db_table = "assignment_per_month"
-        unique_together = ('employee', 'task')
+        unique_together = ('employee', 'task', 'month')
 
 
 class Assignment(models.Model):
