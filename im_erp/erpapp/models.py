@@ -113,7 +113,7 @@ class AssignmentPerMonth(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     month = models.ForeignKey(Month, on_delete=models.CASCADE)
-    duration = models.IntegerField('Duration (in months)')
+    duration = models.IntegerField('Duration (in months)', default=0)
     percentage = models.FloatField('Functional Capacity', default=0.2)
     responsibility = models.BooleanField('Responsible', default=False)
 

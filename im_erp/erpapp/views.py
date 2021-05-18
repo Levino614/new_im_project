@@ -1061,7 +1061,7 @@ def update_ass(request, id):
         while duration_after > 0:
             print('Duration after:', duration_after)
             end_year = int(end_year)
-            end_month = int(end_month)
+            end_month = int(end_month)+1
             month_name = month_dict[str(end_month)]
             month_obj = Month.objects.get(month=month_name, year=end_year)
             print('Month after:', month_obj)
@@ -1104,7 +1104,7 @@ def update_ass(request, id):
                 ass = AssignmentPerMonth.objects.get(employee=emp, task=task, month=month_obj)
             # Create new AssignmentPerMonth Object if it does not yet exist
             except AssignmentPerMonth.DoesNotExist:
-                ass = AssignmentPerMonth(employee=emp, task=task, month=month_obj)
+                ass = AssignmentPerMonth(employee=emp, task=task, month=month_obj, duration=duration)
             print('Assignment:', ass)
             ass.percentage = float(percentage)
             if first:
