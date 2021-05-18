@@ -1053,7 +1053,7 @@ def update_ass(request, id):
 
         # After: end -> end_old
         year_delta_after = int(end_year_old) - int(end_year)
-        month_delta_after = int(end_month_old) - int(end_month)
+        month_delta_after = int(end_month_old)+1 - int(end_month)
         duration_after = 0
         if year_delta_after >= 0:
             duration_after += year_delta_after * 12 + month_delta_after
