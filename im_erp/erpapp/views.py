@@ -319,15 +319,12 @@ def employee_in_months(request, emp_id, month_id):
     for task in Task.objects.all():
         task_info = [task.title]
         assignments = []
-        for month in Month.objects.all():
-            assignments.append('-')
         # iterate through all months
-        i = 0
-        for month in Month.objects.all():
+        for counter, month in enumerate(Month.objects.all()):
+            assignments.append('-')
             for assignment_per_months in AssignmentPerMonth.objects.all():  # set assignment_percentages to right month
                 if task.id == assignment_per_months.task.id and employee.id == assignment_per_months.employee.id and month == assignment_per_months.month:
-                    assignments[i] = int(round(assignment_per_months.percentage, 2) * 100)
-            i = i + 1
+                    assignments[counter] = int(round(assignment_per_months.percentage, 2) * 100)
         task_info.append(assignments[month_id - 1:month_id + 11])
         tasks_in_months.append(task_info)
     months = months[month_id - 1:month_id + 11]
@@ -405,15 +402,12 @@ def task_in_months(request, tsk_id, month_id):
     for employee in Employee.objects.all():
         employee_info = [employee]
         assignments = []
-        for month in Month.objects.all():
-            assignments.append('-')
         # iterate through all months
-        i = 0
-        for month in Month.objects.all():
+        for counter, month in enumerate(Month.objects.all()):
+            assignments.append('-')
             for assignment_per_months in AssignmentPerMonth.objects.all():  # set assignment_percentages to right month
                 if employee.id == assignment_per_months.employee.id and task.id == assignment_per_months.task.id and month == assignment_per_months.month:
-                    assignments[i] = int(round(assignment_per_months.percentage, 2) * 100)
-            i = i + 1
+                    assignments[counter] = int(round(assignment_per_months.percentage, 2) * 100)
         employee_info.append(assignments[month_id - 1:month_id + 11])
         emps_in_months.append(employee_info)
     months = months[month_id - 1:month_id + 11]
