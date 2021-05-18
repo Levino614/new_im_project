@@ -1061,7 +1061,7 @@ def update_ass(request, id):
         while duration_after > 0:
             print('Duration after:', duration_after)
             end_year = int(end_year)
-            end_month = int(end_month)+1
+            end_month = int(end_month)
             month_name = month_dict[str(end_month)]
             month_obj = Month.objects.get(month=month_name, year=end_year)
             print('Month after:', month_obj)
