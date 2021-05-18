@@ -40,6 +40,14 @@ def data(request):
             overload = int(round((employee_sum - employee.capacity), 2) * 100)
             employee_infos.append((employee, employee_sum, employee.capacity, overload))
 
+    warnings = []
+    for project_info in project_infos:
+        if project_info[0] > project_info[1]:
+            warnings.append('{} is currently using too many ressources! ({}%)'.format(project_info[2], project_info[3]))
+    for employee_info in employee_infos:
+        if employee_info[1] > employee_info[2]:
+            warnings.append('{} is currently working too many hours! ({}%)'.format(employee_info[0], employee_info[3]))
+    warnings_length = len(warnings)
     context = {
         'employees': employees,
         'projects': projects,
@@ -48,6 +56,8 @@ def data(request):
         'project_infos': project_infos,
         'employee_infos': employee_infos,
         'assignments': assignments,
+        'warnings': warnings,
+        'warnings_length': warnings_length,
     }
     return render(request, 'data.html', context)
 
@@ -493,12 +503,15 @@ def employee_time(request, id):
     }
     if request.method == "POST":
         start = request.POST.get('start_month')
-        start_year, start_month = str(start).split('-')
+        try:
+            start_year, start_month = str(start).split('-')
+        except ValueError:
+            return redirect('/employee_time/{}'.format(id))
         for month_obj in Month.objects.all():
             if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
                 month_id = month_obj.id
                 return redirect('/employee_time/{}'.format(month_id))
-        return redirect('/employee_time/')
+        return redirect('/employee_time/{}'.format(id))
 
     # create list of lists with task sums for employees
     for employee in employees:
@@ -582,12 +595,15 @@ def task_time(request, id):
     }
     if request.method == "POST":
         start = request.POST.get('start_month')
-        start_year, start_month = str(start).split('-')
+        try:
+            start_year, start_month = str(start).split('-')
+        except ValueError:
+            return redirect('/task_time/{}'.format(id))
         for month_obj in Month.objects.all():
             if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
                 month_id = month_obj.id
                 return redirect('/task_time/{}'.format(month_id))
-        return redirect('/task_time/')
+        return redirect('/task_time/{}'.format(id))
 
     for task in tasks:
         employees_sum = []
@@ -685,7 +701,6 @@ def add_new_pos(request):
                 messages.error(request, "The Position " + form.data['title'] + " already exists")
                 return redirect('/add_new_pos')
         if form.is_valid():
-
             form.save()
             return redirect('/data')
     else:
@@ -699,14 +714,12 @@ def add_new_pos(request):
 def add_new_chair(request):
     if request.method == "POST":
         form = ChairForm(request.POST)
-
         for chair in Chair.objects.all():
             if chair.title == form.data['title']:
                 messages.error(request, "The Chair " + form.data['title'] + " already exists")
                 return redirect('/add_new_chair')
 
         if form.is_valid():
-
             form.save()
             return redirect('/data')
     else:
@@ -964,8 +977,8 @@ def update_chair(request, id):
 def update_ass(request, id):
     assignment = Assignment.objects.get(id=id)
     # Get information about old timeframe before update
-    start_year_old, start_month_old, _ = str(assignment.start).split('-')
-    end_year_old, end_month_old, _ = str(assignment.end).split('-')
+    start_year_old, start_month_old, start_day_old = str(assignment.start).split('-')
+    end_year_old, end_month_old, end_day_old = str(assignment.end).split('-')
     print(assignment.start, assignment.end)
     form = EditAssignmentForm(request.POST, instance=assignment)
     if form.is_valid():
@@ -977,14 +990,14 @@ def update_ass(request, id):
         percentage = form.data['percentage']
         try:
             responsibility = form.data['responsibility']
-        except:
+        except Exception:
             responsibility = False
 
         # Restriction: User shall not be able to edit past assignments
         date_format = "%Y-%m-%d"
         start = form.data['start']
-        start = datetime.strptime(start, date_format)
-        today = datetime.today()
+        start = datetime.strptime(start, date_format).date()
+        today = datetime.today().date()
         if start < today:
             messages.error(request, "Cannot update Assignments in past months.")
             return redirect('/edit_ass/{}'.format(id))
@@ -1019,7 +1032,7 @@ def update_ass(request, id):
         if year_delta_before >= 0:
             duration_before += year_delta_before * 12 + month_delta_before
         # Use information to delete AssignmentPerMonth Objects (in timeframe start_old -> start)
-        while duration_before >= 0:
+        while duration_before > 0:
             print('Duration before:', duration_before)
             start_year_old = int(start_year_old)
             start_month_old = int(start_month_old)
@@ -1040,12 +1053,12 @@ def update_ass(request, id):
 
         # After: end -> end_old
         year_delta_after = int(end_year_old) - int(end_year)
-        month_delta_after = int(end_month_old) - int(end_month)
+        month_delta_after = int(end_month_old)+1 - int(end_month)
         duration_after = 0
         if year_delta_after >= 0:
             duration_after += year_delta_after * 12 + month_delta_after
         # Use information to delete AssignmentPerMonth Objects (in timeframe end -> end_old)
-        while duration_after >= 0:
+        while duration_after > 0:
             print('Duration after:', duration_after)
             end_year = int(end_year)
             end_month = int(end_month)
@@ -1087,13 +1100,17 @@ def update_ass(request, id):
             month_obj = Month.objects.get(month=month_name, year=start_year)
             print('Month:', month_obj)
             # Edit AssignmentPerMonth Object
-            ass = AssignmentPerMonth.objects.get(employee=emp, task=task, month=month_obj)
+            try:
+                ass = AssignmentPerMonth.objects.get(employee=emp, task=task, month=month_obj)
+            # Create new AssignmentPerMonth Object if it does not yet exist
+            except AssignmentPerMonth.DoesNotExist:
+                ass = AssignmentPerMonth(employee=emp, task=task, month=month_obj, duration=duration)
             print('Assignment:', ass)
-            ass.percentage = percentage
+            ass.percentage = float(percentage)
             if first:
-                ass.percentage = percentage * (start_day / 30)
+                ass.percentage = float(percentage) * ((31.0 - float(start_day)) / 30.0)
             if duration == 0:
-                ass.percentage = percentage * (end_day / 30)
+                ass.percentage = float(percentage) * (float(end_day) / 30.0)
 
             ass.responsibility = responsibility
             ass.save()
