@@ -996,8 +996,8 @@ def update_ass(request, id):
         # Restriction: User shall not be able to edit past assignments
         date_format = "%Y-%m-%d"
         start = form.data['start']
-        start = datetime.strptime(start, date_format)
-        today = datetime.today()
+        start = datetime.strptime(start, date_format).date()
+        today = datetime.today().date()
         if start < today:
             messages.error(request, "Cannot update Assignments in past months.")
             return redirect('/edit_ass/{}'.format(id))
@@ -1102,11 +1102,11 @@ def update_ass(request, id):
             # Edit AssignmentPerMonth Object
             ass = AssignmentPerMonth.objects.get(employee=emp, task=task, month=month_obj)
             print('Assignment:', ass)
-            ass.percentage = percentage
+            ass.percentage = float(percentage)
             if first:
-                ass.percentage = percentage * (start_day / 30)
+                ass.percentage = float(percentage) * (float(start_day) / 30.0)
             if duration == 0:
-                ass.percentage = percentage * (end_day / 30)
+                ass.percentage = float(percentage) * (float(end_day) / 30.0)
 
             ass.responsibility = responsibility
             ass.save()
