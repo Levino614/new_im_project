@@ -1100,7 +1100,11 @@ def update_ass(request, id):
             month_obj = Month.objects.get(month=month_name, year=start_year)
             print('Month:', month_obj)
             # Edit AssignmentPerMonth Object
-            ass = AssignmentPerMonth.objects.get(employee=emp, task=task, month=month_obj)
+            try:
+                ass = AssignmentPerMonth.objects.get(employee=emp, task=task, month=month_obj)
+            # Create new AssignmentPerMonth Object if it does not yet exist
+            except AssignmentPerMonth.DoesNotExist:
+                ass = AssignmentPerMonth(employee=emp, task=task, month=month_obj)
             print('Assignment:', ass)
             ass.percentage = float(percentage)
             if first:
