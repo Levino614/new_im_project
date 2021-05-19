@@ -19,6 +19,7 @@ def data(request):
 
     project_infos = []
     employee_infos = []
+    # get information foc each project
     for project in projects:
         sum = 0
         ressources = project.ressources
@@ -40,6 +41,7 @@ def data(request):
             overload = int(round((employee_sum - employee.capacity), 2) * 100)
             employee_infos.append((employee, employee_sum, employee.capacity, overload))
 
+    # check for overbooked projects and employees
     warnings = []
     for project_info in project_infos:
         if project_info[0] > project_info[1]:
@@ -48,6 +50,7 @@ def data(request):
         if employee_info[1] > employee_info[2]:
             warnings.append('{} is currently working too many hours! ({}%)'.format(employee_info[0], employee_info[3]))
     warnings_length = len(warnings)
+    #provide information for frontend
     context = {
         'employees': employees,
         'projects': projects,
@@ -80,6 +83,7 @@ def dashboard_no_id(request):
         '11': 'November',
         '12': 'December',
     }
+    # save values of the current month get month with that values
     month_name = month_dict[str(int(current_month))]
     month = Month.objects.get(month=month_name, year=current_year)
     return redirect('/dashboard/{}'.format(month.id))
