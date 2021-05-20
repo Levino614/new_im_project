@@ -534,9 +534,9 @@ def employee_time_no_id(request):
 
 
 def employee_time(request, id):
-    employees = Employee.objects.all()
+    employees = []
     assignments_per_month = AssignmentPerMonth.objects.all()
-    months = Month.objects.all()
+    months_sliced = Month.objects.all()[(id - 1):(id + 11)]
     assignments_sums = []
 
     month_dict = {
@@ -566,23 +566,29 @@ def employee_time(request, id):
         return redirect('/employee_time/{}'.format(id))
 
     # create list of lists with task sums for employees
-    for employee in employees:
+    for employee in Employee.objects.all():
         tasks_sum = []
+        append = False
         # loop through months
-        for month in months:
+        for month in months_sliced: # m zu all months
+            print("month: ", month)
+            print("-------")
             sum = 0
             # if current month and employee in assignments are right sum the percentages
             for assignment_per_month in assignments_per_month:
                 if assignment_per_month.employee == employee and assignment_per_month.month == month:
+                    print("success")
                     sum += assignment_per_month.percentage
+                    append = True
             # append the current sum value to list
             tasks_sum.append(int(round(sum, 2) * 100))
+            print("tasks: ", tasks_sum)
         # Slice list to only have 12 entries
-        tasks_sum = tasks_sum[(id - 1):(id + 11)]
+        # tasks_sum = tasks_sum[(id - 1):(id + 11)]
         # append list to other lists
-        assignments_sums.append(tasks_sum)
-
-    months = months[(id - 1):(id + 11)]
+        if append:
+            assignments_sums.append(tasks_sum)
+            employees.append(employee)
 
     date = timezone.now()
     current_year, current_month, _ = str(date).split('-')
@@ -592,7 +598,7 @@ def employee_time(request, id):
     next_month = Month.objects.get(id=id + 1)
     month = Month.objects.get(id=id)
     context = {
-        'months': months,
+        'months': months_sliced,
         'assignments': assignments_sums,
         'employees': employees,
         'today': today,
@@ -626,9 +632,9 @@ def task_time_no_id(request):
 
 
 def task_time(request, id):
-    tasks = Task.objects.all()
+    tasks = []
     assignments_per_month = AssignmentPerMonth.objects.all()
-    months = Month.objects.all()
+    months_sliced = Month.objects.all()[(id - 1):(id + 11)]
     assignment_sums = []
 
     month_dict = {
@@ -657,17 +663,20 @@ def task_time(request, id):
                 return redirect('/task_time/{}'.format(month_id))
         return redirect('/task_time/{}'.format(id))
 
-    for task in tasks:
+    for task in Task.objects.all():
         employees_sum = []
-        for month in months:
+        append = False
+        for month in months_sliced:
             sum = 0
             for assignment_per_month in assignments_per_month:
                 if assignment_per_month.task.id == task.id and assignment_per_month.month == month:
                     sum += int(round(assignment_per_month.percentage, 2) * 100)
+                    append = True
             employees_sum.append(sum)
-        employees_sum = employees_sum[(id - 1):(id + 11)]
-        assignment_sums.append(employees_sum)
-    months = months[(id - 1):(id + 11)]
+
+        if append:
+            assignment_sums.append(employees_sum)
+            tasks.append(task)
 
     date = timezone.now()
     current_year, current_month, _ = str(date).split('-')
@@ -677,7 +686,7 @@ def task_time(request, id):
     next_month = Month.objects.get(id=id + 1)
     month = Month.objects.get(id=id)
     context = {
-        'months': months,
+        'months': months_sliced,
         'assignments': assignment_sums,
         'tasks': tasks,
         'today': today,
