@@ -139,4 +139,3 @@ class Assignment(models.Model):
 
     class Meta:
         db_table = "assignment"
-        unique_together = ('employee', 'task')

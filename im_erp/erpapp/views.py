@@ -30,7 +30,8 @@ def data(request):
 
         project_infos.append((sum, ressources, title, diff))
 
-        # Employees information
+        # Collect Employees Information
+        # (Employee, summed assignment percentages, max Capacity and the difference between them)
         for employee in employees:
             employee_sum = 0
             for task in tasks:
@@ -88,9 +89,6 @@ def dashboard_no_id(request):
 def dashboard(request, id):
     month = Month.objects.get(id=id)
     tasks = Task.objects.all()
-    projects = Project.objects.all()
-    positions = Position.objects.all()
-    chairs = Chair.objects.all()
 
     month_dict = {
         '1': 'January',
@@ -769,7 +767,7 @@ def add_new_ass(request):
                         sum = sum + assignment.percentage
                 # check if new assignment would overbook position
                 if sum + float(form.data['percentage']) > 1:
-                    messages.error(request, "This assignment would overbook postion( Title: " + Position.objects.get(
+                    messages.error(request, "This assignment would overbook Chair Postion( Title: " + Position.objects.get(
                         id=int(form.data['task'])).title + ").")
                     return redirect('/add_new_ass')
             # CHECK IF CHAIR ISNT OVERBOOKED
@@ -788,6 +786,9 @@ def add_new_ass(request):
                     messages.error(request, "Chair " + Chair.objects.get(
                         id=int(form.data['task'])).title + " would be overbooked.")
                     return redirect('/add_new_ass')
+
+
+
 
             # Get Information about the dates and calculate the duration
             emp = Employee.objects.get(id=form.data['employee'])
@@ -829,6 +830,7 @@ def add_new_ass(request):
                     responsibility = False
 
                 percentage = form.data['percentage']
+                # The assignments percentage in the first and last month further depends on the day
                 if first:
                     percentage = float(percentage) * (float(start_day) / 30.0)
                 if duration == 0:
