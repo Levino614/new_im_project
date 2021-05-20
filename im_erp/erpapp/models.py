@@ -50,6 +50,14 @@ class Employee(models.Model):
     def fullname(self):
         return '{} {}'.format(self.firstname, self.lastname)
 
+    @property
+    def hiring_date_formatted(self):
+        return str(self.hiring_date)
+
+    @property
+    def expiration_date_formatted(self):
+        return str(self.expiration_date)
+
     def __str__(self):
         return self.fullname
 
@@ -74,6 +82,14 @@ class Project(Task):
     ressources = models.FloatField('Ressources')
     begin = models.DateField('Project Start')
     end = models.DateField('Project End')
+
+    @property
+    def begin_formatted(self):
+        return str(self.begin)
+
+    @property
+    def end_formatted(self):
+        return str(self.end)
 
     def __str__(self):
         return self.title
@@ -128,11 +144,19 @@ class AssignmentPerMonth(models.Model):
 class Assignment(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
-    start = models.DateField('From', default=timezone.now())
-    end = models.DateField('To', default=timezone.now())
+    start = models.DateField('From', default=timezone.now().date())
+    end = models.DateField('To', default=timezone.now().date())
     percentage = models.FloatField('Functional Capacity', default=0.2)
     responsibility = models.BooleanField('Responsible', default=False)
     comment = models.CharField('Comment', max_length=2400, default='-')
+
+    @property
+    def start_formatted(self):
+        return str(self.start)
+
+    @property
+    def end_formatted(self):
+        return str(self.end)
 
     def __str__(self):
         return '{} --({})-> {}'.format(self.employee, self.percentage, self.task)

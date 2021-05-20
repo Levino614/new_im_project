@@ -44,15 +44,15 @@
             <div class="form-group row">
                 <label class="col-sm-2 col-form-label">Begin:</label>
                 <div class="col-sm-4">
-                    <input type="date" class="form-control" name="begin" id="id_begin" required maxlength="20"
-                           value="{{ project.begin }}"/>
+                    <input type="text" class="form-control" name="begin" id="id_begin" required maxlength="20"
+                           value="{{ project.begin_formatted }}"/>
                 </div>
             </div>
             <div class="form-group row">
                 <label class="col-sm-2 col-form-label">End:</label>
                 <div class="col-sm-4">
-                    <input type="date" class="form-control" name="end" id="id_end" required maxlength="20"
-                           value="{{ project.end }}"/>
+                    <input type="text" class="form-control" name="end" id="id_end" required maxlength="20"
+                           value="{{ project.end_formatted }}"/>
                 </div>
             </div>
             <div class="form-group row">
