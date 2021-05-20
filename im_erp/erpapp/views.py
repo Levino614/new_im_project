@@ -344,7 +344,6 @@ def employee_in_months(request, emp_id, month_id):
 
     # data for one employee
     employee = Employee.objects.get(id=emp_id)
-    months = Month.objects.all()
     tasks_in_months = []
 
     for task in Task.objects.all():
@@ -354,7 +353,7 @@ def employee_in_months(request, emp_id, month_id):
         for counter, month in enumerate(Month.objects.all()[month_id - 1:month_id + 11]):
             assignments.append('-')
             for assignment_per_months in AssignmentPerMonth.objects.all():
-                if task.id == assignment_per_months.task.id and employee == assignment_per_months.employee and assignment_per_months.month == month:
+                if task.id == assignment_per_months.task.id and employee.id == assignment_per_months.employee.id and assignment_per_months.month == month:
                     assignments[counter] = int(round(assignment_per_months.percentage, 2) * 100)
                     append = True
         if append:
@@ -453,11 +452,23 @@ def task_in_months(request, tsk_id, month_id):
         return redirect('/task_in_months/{}/{}'.format(tsk_id, month_id))
 
     # data for one employee
-    task = Project.objects.get(id=tsk_id)
-    months = Month.objects.all()
+    task = Task.objects.get(id=tsk_id)
     emps_in_months = []
 
     for employee in Employee.objects.all():
+        employee_info = [employee]
+        assignments = []
+        append = False
+        for counter, month in enumerate(Month.objects.all()[month_id - 1: month_id + 11]):
+            assignments.append('-')
+            for assignment_per_months in AssignmentPerMonth.objects.all():
+                if employee.id == assignment_per_months.employee.id and task.id == assignment_per_months.task.id and assignment_per_months.month == month:
+                    assignments[counter] = int(round(assignment_per_months.percentage, 2) * 100)
+                    append = True
+        if append:
+            employee_info.append(assignments)
+            emps_in_months.append(employee_info)
+    """for employee in Employee.objects.all():
         employee_info = [employee]
         assignments = []
         # iterate through all months
@@ -468,7 +479,7 @@ def task_in_months(request, tsk_id, month_id):
                     assignments[counter] = int(round(assignment_per_months.percentage, 2) * 100)
         employee_info.append(assignments[month_id - 1:month_id + 11])
         emps_in_months.append(employee_info)
-    months = months[month_id - 1:month_id + 11]
+    months = months[month_id - 1:month_id + 11]"""
 
     month_dict = {
         '1': 'January',
@@ -501,7 +512,7 @@ def task_in_months(request, tsk_id, month_id):
     context = {
         'task': task,
         'emps_in_months': emps_in_months,
-        'months': months,
+        'months': Month.objects.all()[month_id - 1: month_id + 11],
         'month': month,
         'previous_month': previous_month,
         'next_month': next_month,
