@@ -39,7 +39,7 @@ class Employee(models.Model):
     lastname = models.CharField('Last Name', max_length=32)
     type_choices = [
         ('Undergraduate Assistant', 'Undergraduate Assistant'),
-        ('Research Assistant', 'Research Assistant')
+        ('Research Associate', 'Research Associate')
     ]
     type = models.CharField('Type of Employment', choices=type_choices, max_length=32)
     capacity = models.FloatField('Capacity', default=1.0)

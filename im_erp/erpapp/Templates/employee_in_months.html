@@ -2,6 +2,20 @@
 {% block title %}SmartRnD - Employee{% endblock title %}
 
 {% block content %}
+<!-- Select Month form -->
+<div class="row">
+    <form method="POST" class="post-form">
+        {% csrf_token %}
+        <div class="form-group row">
+            <div class="col-4">
+                <input type="month" name="start_month" id="start_month" class="form-control">
+            </div>
+            <div class="col-4">
+                <input type="submit" value="Choose Month" class="btn btn-primary">
+            </div>
+        </div>
+    </form>
+</div>
 <!-- Heading and month switcher <- today -> -->
 <div class="row">
     <div class="col-3">

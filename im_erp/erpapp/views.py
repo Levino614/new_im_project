@@ -106,7 +106,10 @@ def dashboard(request, id):
     }
     if request.method == "POST":
         start = request.POST.get('start_month')
-        start_year, start_month = str(start).split('-')
+        try:
+            start_year, start_month = str(start).split('-')
+        except ValueError:
+            return redirect('/dashboard/')
         for month_obj in Month.objects.all():
             if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
                 month_id = month_obj.id
@@ -309,6 +312,32 @@ def employee_in_months_no_id(request, emp_id):
 
 
 def employee_in_months(request, emp_id, month_id):
+    month_dict = {
+        '1': 'January',
+        '2': 'February',
+        '3': 'March',
+        '4': 'April',
+        '5': 'May',
+        '6': 'June',
+        '7': 'July',
+        '8': 'August',
+        '9': 'September',
+        '10': 'October',
+        '11': 'November',
+        '12': 'December',
+    }
+    if request.method == "POST":
+        start = request.POST.get('start_month')
+        try:
+            start_year, start_month = str(start).split('-')
+        except ValueError:
+            return redirect('/employee_in_months/{}/{}'.format(emp_id, month_id))
+        for month_obj in Month.objects.all():
+            if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
+                month_id = month_obj.id
+                return redirect('/employee_in_months/{}/{}'.format(emp_id, month_id))
+        return redirect('/employee_in_months/{}/{}'.format(emp_id, month_id))
+
     # data for one employee
     employee = Employee.objects.get(id=emp_id)
     months = Month.objects.all()
@@ -392,6 +421,33 @@ def task_in_months_no_id(request, tsk_id):
 
 
 def task_in_months(request, tsk_id, month_id):
+    month_dict = {
+        '1': 'January',
+        '2': 'February',
+        '3': 'March',
+        '4': 'April',
+        '5': 'May',
+        '6': 'June',
+        '7': 'July',
+        '8': 'August',
+        '9': 'September',
+        '10': 'October',
+        '11': 'November',
+        '12': 'December',
+    }
+    if request.method == "POST":
+        start = request.POST.get('start_month')
+        try:
+            start_year, start_month = str(start).split('-')
+        except ValueError:
+            return redirect('/task_in_months/{}/{}'.format(tsk_id, month_id))
+        for month_obj in Month.objects.all():
+            if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
+                month_id = month_obj.id
+                return redirect('/task_in_months/{}/{}'.format(tsk_id, month_id))
+        return redirect('/task_in_months/{}/{}'.format(tsk_id, month_id))
+
+
     # data for one employee
     task = Project.objects.get(id=tsk_id)
     months = Month.objects.all()
@@ -641,7 +697,6 @@ def add_new_emp(request):
                 messages.error(request, "Employee already exists.")
                 return redirect('/add_new_emp')
         if form.is_valid():
-
             # Restrictions
             date_format = "%Y-%m-%d"
             if datetime.date(datetime.strptime(form.data['hiring_date'], date_format)) > \
@@ -726,12 +781,6 @@ def add_new_ass(request):
     months = Month.objects.all()
     if request.method == "POST":
         form = AssignmentForm(request.POST)
-        # CHECK FOR DUPLICATES
-        for assignment in Assignment.objects.all():
-            if str(assignment.employee.id) == form.data['employee'] and \
-                    str(assignment.task.id) == form.data['task']:
-                messages.error(request, "Emplyoee is already assigned to this task.")
-                return redirect('/add_new_ass')
         if form.is_valid():
             emp = Employee.objects.get(id=form.data['employee'])
             tsk = Task.objects.get(id=form.data['task'])
@@ -832,7 +881,7 @@ def add_new_ass(request):
                 percentage = form.data['percentage']
                 # The assignments percentage in the first and last month further depends on the day
                 if first:
-                    percentage = float(percentage) * (float(start_day) / 30.0)
+                    percentage = float(percentage) * ((31 - float(start_day)) / 30.0)
                 if duration == 0:
                     percentage = float(percentage) * (float(end_day) / 30.0)
 
