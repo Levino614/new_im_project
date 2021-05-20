@@ -451,7 +451,6 @@ def task_in_months(request, tsk_id, month_id):
                 return redirect('/task_in_months/{}/{}'.format(tsk_id, month_id))
         return redirect('/task_in_months/{}/{}'.format(tsk_id, month_id))
 
-
     # data for one employee
     task = Project.objects.get(id=tsk_id)
     months = Month.objects.all()
@@ -829,8 +828,9 @@ def add_new_ass(request):
                         sum = sum + assignment.percentage
                 # check if new assignment would overbook position
                 if sum + float(form.data['percentage']) > 1:
-                    messages.error(request, "This assignment would overbook Chair Postion( Title: " + Position.objects.get(
-                        id=int(form.data['task'])).title + ").")
+                    messages.error(request,
+                                   "This assignment would overbook Chair Postion( Title: " + Position.objects.get(
+                                       id=int(form.data['task'])).title + ").")
                     return redirect('/add_new_ass')
             # CHECK IF CHAIR ISNT OVERBOOKED
             chairs = Chair.objects.all()
@@ -848,9 +848,6 @@ def add_new_ass(request):
                     messages.error(request, "Chair " + Chair.objects.get(
                         id=int(form.data['task'])).title + " would be overbooked.")
                     return redirect('/add_new_ass')
-
-
-
 
             # Get Information about the dates and calculate the duration
             emp = Employee.objects.get(id=form.data['employee'])
@@ -1034,32 +1031,65 @@ def update_chair(request, id):
 
 def update_ass(request, id):
     assignment = Assignment.objects.get(id=id)
-    # Get information about old timeframe before update
-    start_year_old, start_month_old, start_day_old = str(assignment.start).split('-')
-    end_year_old, end_month_old, end_day_old = str(assignment.end).split('-')
-    print(assignment.start, assignment.end)
+    percentage_old = assignment.percentage
+    responsibility_old = assignment.responsibility
+    start_old = assignment.start_formatted
+    end_old = assignment.end_formatted
+    comment_old = assignment.comment
+
     form = EditAssignmentForm(request.POST, instance=assignment)
     if form.is_valid():
-        # Get form data
+        # convert strings to datetime.date objects to easily compare (-> restrictions)
+        format = '%Y-%m-%d'
+        start_old_date = datetime.strptime(start_old, format).date()
+        start_new_date = datetime.strptime(assignment.start_formatted, format).date()
+        end_old_date = datetime.strptime(end_old, format).date()
+        end_new_date = datetime.strptime(assignment.end_formatted, format).date()
+
+        # RESTRICTION: Start must be earlier than end
+        if not (start_new_date < end_new_date):
+            messages.error(request, "Start date must be earlier than end date.")
+            return redirect('/edit_ass/{}'.format(id))
+
+        # RESTRICTION: NEW TIMEFRAME MUST BE WITHIN ASSIGNMENT
+        if not ((start_old_date <= start_new_date <= end_old_date)
+                and (start_old_date <= end_new_date <= end_old_date)):
+            messages.error(request, "Start and end date must be within the assignments timeframe.")
+            return redirect('/edit_ass/{}'.format(id))
+
+        # GET FORM DATA
         emp = Employee.objects.filter(id=assignment.employee.id).first()
-        print('Emp:', emp)
         task = Task.objects.filter(id=assignment.task.id).first()
-        print('Task:', task)
         percentage = form.data['percentage']
         try:
             responsibility = form.data['responsibility']
         except Exception:
             responsibility = False
-
-        # Restriction: User shall not be able to edit past assignments
-        date_format = "%Y-%m-%d"
+        comment = form.data['comment']
         start = form.data['start']
-        start = datetime.strptime(start, date_format).date()
-        today = datetime.today().date()
-        if start < today:
+        end = form.data['end']
+
+        # RESTRICTION: USER SHALL NOT BE ABLE TO EDIT PAST ASSIGNMENTS
+        date_format = "%Y-%m-%d"
+        if datetime.strptime(start, date_format).date() < datetime.today().date():
             messages.error(request, "Cannot update Assignments in past months.")
             return redirect('/edit_ass/{}'.format(id))
 
+        # CREATE A NEW ASSIGNMENT WITH OLD VALUES BEFORE AND AFTER THE NEWLY SET TIMEFRAME
+        # start_old -> start    and    end -> end_old
+        # Before: start_old -> start
+        ass_before = Assignment(employee=emp, task=task, start=start_old, end=start,
+                                percentage=percentage_old, responsibility=responsibility_old,
+                                comment=comment_old)
+        ass_before.save()
+        # After: end -> end_old
+        ass_after = Assignment(employee=emp, task=task, start=end, end=end_old,
+                               percentage=percentage_old, responsibility=responsibility_old,
+                               comment=comment_old)
+        ass_after.save()
+
+        # UPDATE ASSIGNMENTPERMONTHS WITHIN THE NEW TIMEFRAME
+        # get all the needed information about the dates
         month_dict = {
             '1': 'January',
             '2': 'February',
@@ -1074,97 +1104,29 @@ def update_ass(request, id):
             '11': 'November',
             '12': 'December',
         }
-        # Get information about the dates
-        print(form.data)
         start_year, start_month, start_day = str(form.data['start']).split('-')
         end_year, end_month, end_day = str(form.data['end']).split('-')
         end_year_update, end_month_update, end_day_update = str(form.data['end']).split('-')
 
-        # Delete AssignmentPerMonths before and after the newly set timeframe:
-        # start_old -> start    and    end -> end_old
-
-        # Before: start_old -> start
-        year_delta_before = int(start_year) - int(start_year_old)
-        month_delta_before = int(start_month) - int(start_month_old)
-        duration_before = 0
-        if year_delta_before >= 0:
-            duration_before += year_delta_before * 12 + month_delta_before
-        # Use information to delete AssignmentPerMonth Objects (in timeframe start_old -> start)
-        while duration_before > 0:
-            print('Duration before:', duration_before)
-            start_year_old = int(start_year_old)
-            start_month_old = int(start_month_old)
-            month_name = month_dict[str(start_month_old)]
-            month_obj = Month.objects.get(month=month_name, year=start_year_old)
-            print('Month before:', month_obj)
-            # Delete AssignmentPerMonth Objects
-            ass = AssignmentPerMonth.objects.get(employee=emp, task=task, month=month_obj)
-            print('Assignment:', ass)
-            ass.delete()
-            # Iterator while loop
-            if start_month_old < 12:
-                start_month_old += 1
-            else:
-                start_month_old = 1
-                start_year_old += 1
-            duration_before -= 1
-
-        # After: end -> end_old
-        year_delta_after = int(end_year_old) - int(end_year)
-        month_delta_after = int(end_month_old)+1 - int(end_month)
-        duration_after = 0
-        if year_delta_after >= 0:
-            duration_after += year_delta_after * 12 + month_delta_after
-        # Use information to delete AssignmentPerMonth Objects (in timeframe end -> end_old)
-        while duration_after > 0:
-            print('Duration after:', duration_after)
-            end_year = int(end_year)
-            end_month = int(end_month)
-            month_name = month_dict[str(end_month)]
-            month_obj = Month.objects.get(month=month_name, year=end_year)
-            print('Month after:', month_obj)
-            # Delete AssignmentPerMonth Objects
-            ass = AssignmentPerMonth.objects.get(employee=emp, task=task, month=month_obj)
-            print('Assignment:', ass)
-            ass.delete()
-            # Iterator while loop
-            if end_month < 12:
-                end_month += 1
-            else:
-                end_month = 1
-                end_year += 1
-            duration_after -= 1
-
-        # Update AssignmentPerMonths within the newly set timeframe
-        print('-----Update-----')
-        # start -> end
-        # Calculate duration of changes
-        print('Start:', start_year, start_month)
-        print('End:', end_year_update, end_month_update)
+        # Calculate AssignmentPerMonth count (duration = end - start)
         year_delta = int(end_year_update) - int(start_year)
-        print('Year delta:', year_delta)
         month_delta = int(end_month_update) - int(start_month)
-        print('Month delta', month_delta)
         duration = 0
         if year_delta >= 0:
             duration += year_delta * 12 + month_delta
-        # Use information to edit AssignmentPerMonth Objects
+
+        # Use information to update AssignmentPerMonth Objects
         first = True
         while duration >= 0:
-            print('Duration:', duration)
+            # Convert the data
             start_year = int(start_year)
             start_month = int(start_month)
             month_name = month_dict[str(start_month)]
             month_obj = Month.objects.get(month=month_name, year=start_year)
-            print('Month:', month_obj)
-            # Edit AssignmentPerMonth Object
-            try:
-                ass = AssignmentPerMonth.objects.get(employee=emp, task=task, month=month_obj)
-            # Create new AssignmentPerMonth Object if it does not yet exist
-            except AssignmentPerMonth.DoesNotExist:
-                ass = AssignmentPerMonth(employee=emp, task=task, month=month_obj, duration=duration)
-            print('Assignment:', ass)
+            # Paste the data
+            ass = AssignmentPerMonth.objects.get(employee=emp, task=task, month=month_obj)
             ass.percentage = float(percentage)
+            # The first and last Months percentage needs to regard the day
             if first:
                 ass.percentage = float(percentage) * ((31.0 - float(start_day)) / 30.0)
             if duration == 0:
@@ -1172,7 +1134,8 @@ def update_ass(request, id):
 
             ass.responsibility = responsibility
             ass.save()
-            # Iterator while loop
+
+            # Prepare following iteration
             if start_month < 12:
                 start_month += 1
             else:
