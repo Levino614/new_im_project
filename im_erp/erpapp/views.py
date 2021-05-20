@@ -350,15 +350,16 @@ def employee_in_months(request, emp_id, month_id):
     for task in Task.objects.all():
         task_info = [task.title]
         assignments = []
-        # iterate through all months
-        for counter, month in enumerate(Month.objects.all()):
+        append = False
+        for counter, month in enumerate(Month.objects.all()[month_id - 1:month_id + 11]):
             assignments.append('-')
-            for assignment_per_months in AssignmentPerMonth.objects.all():  # set assignment_percentages to right month
-                if task.id == assignment_per_months.task.id and employee.id == assignment_per_months.employee.id and month == assignment_per_months.month:
+            for assignment_per_months in AssignmentPerMonth.objects.all():
+                if task.id == assignment_per_months.task.id and employee == assignment_per_months.employee and assignment_per_months.month == month:
                     assignments[counter] = int(round(assignment_per_months.percentage, 2) * 100)
-        task_info.append(assignments[month_id - 1:month_id + 11])
-        tasks_in_months.append(task_info)
-    months = months[month_id - 1:month_id + 11]
+                    append = True
+        if append:
+            task_info.append(assignments)
+            tasks_in_months.append(task_info)
 
     month_dict = {
         '1': 'January',
@@ -393,7 +394,7 @@ def employee_in_months(request, emp_id, month_id):
     context = {
         'employee': employee,
         'tasks_in_months': tasks_in_months,
-        'months': months,
+        'months': Month.objects.all()[month_id - 1:month_id + 11],
         'month': month,
         'previous_month': previous_month,
         'next_month': next_month,
@@ -569,14 +570,11 @@ def employee_time(request, id):
         tasks_sum = []
         append = False
         # loop through months
-        for month in months_sliced: # m zu all months
-            print("month: ", month)
-            print("-------")
+        for month in months_sliced:
             sum = 0
             # if current month and employee in assignments are right sum the percentages
             for assignment_per_month in assignments_per_month:
                 if assignment_per_month.employee == employee and assignment_per_month.month == month:
-                    print("success")
                     sum += assignment_per_month.percentage
                     append = True
             # append the current sum value to list
