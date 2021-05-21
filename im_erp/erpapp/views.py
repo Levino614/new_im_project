@@ -822,23 +822,23 @@ def add_new_ass(request):
                     datetime.date(datetime.strptime(form.data['end'], date_format)):
                 messages.error(request, "The Assignment ends before it even started")
                 return redirect('/add_new_ass')
-            # CHECK FOR POSITION <= 100%
-            # Get id's of all postions
-            postions = Position.objects.all()
-            postion_ids = []
-            for position in postions:
-                postion_ids.append(position.id)
-            # check if selected id is present in postion_ids list
-            if int(form.data['task']) in postion_ids:
+            # CHECK IF POSITION ISN'T OVERBOOKED
+            # Get id's of all positions
+            positions = Position.objects.all()
+            position_ids = []
+            for position in positions:
+                position_ids.append(position.id)
+            # check if selected id is present in position_ids list
+            if int(form.data['task']) in position_ids:
                 sum = 0
                 # sum all percentages for this position
                 for assignment in Assignment.objects.all():
                     if assignment.task.id == int(form.data['task']):
                         sum = sum + assignment.percentage
                 # check if new assignment would overbook position
-                if sum + float(form.data['percentage']) > 1:
+                if sum + float(form.data['percentage']) > Position.objects.get(id=form.data['task']).ressources:
                     messages.error(request,
-                                   "This assignment would overbook Chair Postion( Title: " + Position.objects.get(
+                                   "This assignment would overbook Postion( Title: " + Position.objects.get(
                                        id=int(form.data['task'])).title + ").")
                     return redirect('/add_new_ass')
             # CHECK IF CHAIR ISNT OVERBOOKED
