@@ -9,6 +9,7 @@ from erpapp.models import Employee, Project, Position, Chair, Assignment, Task, 
 
 # CRUD DATA (CREATE/READ/UPDATE/DELETE)
 def data(request):
+    # Retrieve object data
     employees = Employee.objects.all()
     projects = Project.objects.all()
     positions = Position.objects.all()
@@ -16,32 +17,60 @@ def data(request):
     tasks = Task.objects.all()
     assignments = Assignment.objects.all()
 
-    project_infos = []
-    employee_infos = []
-    # get information foc each project
+    # Collect information about the projects and employees to throw warning messages
+    # when ressources/capacity is overused
+    project_infos = []  # Information about the projects
+    employee_infos = []  # Information about the employees
+    # Get Assignments for current month
+    date = timezone.now()
+    month_dict = {
+        '1': 'January',
+        '2': 'February',
+        '3': 'March',
+        '4': 'April',
+        '5': 'May',
+        '6': 'June',
+        '7': 'July',
+        '8': 'August',
+        '9': 'September',
+        '10': 'October',
+        '11': 'November',
+        '12': 'December',
+    }
+    current_year, current_month, _ = str(date).split('-')
+    month_name = month_dict[str(int(current_month))]
+    month_object = Month.objects.get(year=current_year, month=month_name)
+    assignmentpermonths = AssignmentPerMonth.objects.all().filter(month=month_object)
+    # Collect Projects Information
+    # (project_sum, available ressources, project title, difference between sum and ressources)
     for project in projects:
         sum = 0
         ressources = project.ressources
         title = project.title
-        for assignment in assignments:
+        # Calculate the sum by checking all assignments in current month
+        for assignment in assignmentpermonths:
             if assignment.task.id == project.id:
                 sum += assignment.percentage
+        # By what amount the project is currently overbooked
         diff = int(round((sum - ressources), 2) * 100)
+        project_infos.append((sum, ressources, title, diff))  # Append information to list
 
-        project_infos.append((sum, ressources, title, diff))
+    # Collect Employees Information
+    # (Employee, summed assignment percentages, max Capacity and the difference between them)
+    for employee in employees:
+        employee_sum = 0
+        # Calculate the sum by checking all assignments in current month
+        for task in tasks:
+            # Calculate the sum by checking all assignments in current month
+            for assignment in assignmentpermonths:
+                if assignment.task.id == task.id and assignment.employee.id == employee.id:
+                    employee_sum += assignment.percentage
+        # By what amount the employee is currently overbooked
+        overload = int(round((employee_sum - employee.capacity), 2) * 100)
+        employee_infos.append((employee, employee_sum, employee.capacity, overload))  # Append information to list
 
-        # Collect Employees Information
-        # (Employee, summed assignment percentages, max Capacity and the difference between them)
-        for employee in employees:
-            employee_sum = 0
-            for task in tasks:
-                for assignment in assignments:
-                    if assignment.task.id == task.id and assignment.employee.id == employee.id:
-                        employee_sum += assignment.percentage
-            overload = int(round((employee_sum - employee.capacity), 2) * 100)
-            employee_infos.append((employee, employee_sum, employee.capacity, overload))
-
-    # check for overbooked projects and employees
+    # Create a list of warning messages,
+    # if the sum of assignment percentages is greater than the max available ressources/capacity
     warnings = []
     for project_info in project_infos:
         if project_info[0] > project_info[1]:
@@ -50,7 +79,8 @@ def data(request):
         if employee_info[1] > employee_info[2]:
             warnings.append('{} is currently working too many hours! ({}%)'.format(employee_info[0], employee_info[3]))
     warnings_length = len(warnings)
-    #provide information for frontend
+
+    # Provide information for frontend
     context = {
         'employees': employees,
         'projects': projects,
@@ -61,12 +91,14 @@ def data(request):
         'assignments': assignments,
         'warnings': warnings,
         'warnings_length': warnings_length,
+        'month_object': month_object,
     }
     return render(request, 'data.html', context)
 
 
 # DASHBOARD / INDEX / HOME
 def dashboard_no_id(request):
+    # Redirecting to current month if no month was submitted
     date = timezone.now()
     current_year, current_month, _ = str(date).split('-')
     month_dict = {
@@ -83,7 +115,6 @@ def dashboard_no_id(request):
         '11': 'November',
         '12': 'December',
     }
-    # save values of the current month get month with that values
     month_name = month_dict[str(int(current_month))]
     month = Month.objects.get(month=month_name, year=current_year)
     return redirect('/dashboard/{}'.format(month.id))
@@ -92,7 +123,6 @@ def dashboard_no_id(request):
 def dashboard(request, id):
     month = Month.objects.get(id=id)
     tasks = Task.objects.all()
-
     month_dict = {
         '1': 'January',
         '2': 'February',
@@ -107,31 +137,58 @@ def dashboard(request, id):
         '11': 'November',
         '12': 'December',
     }
+
+    # Frontend month selector
     if request.method == "POST":
+        # Get the chosen month
         start = request.POST.get('start_month')
+        # Try to extract month and year of selected date
         try:
             start_year, start_month = str(start).split('-')
+        # Redirect to current month if no date was selected
         except ValueError:
             return redirect('/dashboard/')
+        # Check if selected month exists
         for month_obj in Month.objects.all():
+            # Redirect to selected month if yes
             if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
                 month_id = month_obj.id
                 return redirect('/dashboard/{}'.format(month_id))
+        # Redirect to current month otherwise
         return redirect('/dashboard/')
 
-    # list for all employees
-    employee_rows = []
+    # Get previous and following/next month information for frontend date switcher
+    date = timezone.now()
+    current_year, current_month, _ = str(date).split('-')
+    current_month_name = month_dict[str(int(current_month))]
+    today = Month.objects.get(month=current_month_name, year=current_year)
+    try:
+        previous_month = Month.objects.get(id=id - 1)
+    # redirect to last selected month if previous month does not exist
+    except Exception:
+        previous_month = Month.objects.get(id=id)
+    try:
+        next_month = Month.objects.get(id=id + 1)
+    # redirect to last selected month if following/next month does not exist
+    except Exception:
+        next_month = Month.objects.get(id=id)
 
-    # create a list for each employee
+    # Collect information for each row in the data table (employee)
+    # [[[employee, sum, capacity, workload], [project_percentages, ...], [position_percentages, ...], [chair_percentages, ...]],
+    #  [[employee, sum, capacity, workload], [project_percentages, ...], [position_percentages, ...], [chair_percentages, ...]],
+    #  [[employee, sum, capacity, workload], [project_percentages, ...], [position_percentages, ...], [chair_percentages, ...]],
+    #  ...
+    # ]
+    employee_rows = []
     for employee in Employee.objects.all():
-        employee_row = []
-        # employee info
+        # Collect information for each employee and append it to the matrix (employee_rows)
         employee_sum = 0
-        # look through all assignments for all tasks for one emoloyee
+        # look through all assignments for all tasks for one employee
         for task in tasks:
             for assignment_per_month in AssignmentPerMonth.objects.all():
                 # if assignment in month exists add percentage to sum
-                if employee.id == assignment_per_month.employee.id and task.id == assignment_per_month.task.id and month == assignment_per_month.month:
+                if employee.id == assignment_per_month.employee.id and task.id == assignment_per_month.task.id \
+                        and month == assignment_per_month.month:
                     employee_sum = employee_sum + assignment_per_month.percentage
         # get capacity and calculate workload
         employee_capacity = employee.capacity
@@ -140,47 +197,51 @@ def dashboard(request, id):
         # attach these infos to first element in list for each employee
         employee_title = [(employee, int(employee_sum * 100), int(employee_capacity * 100), employee_worklooad)]
 
-        # GET A LIST WITH '-' FOR EVERY PROJECT
+        # COLLECT ASSIGNMENT PERCENTAGES AND RESPONSIBILITY FOR EACH PROJECT, CHAIR POSITION AND CHAIR TASK
+        # PROJECT
         assignment_infos_project = []
         for counter, project in enumerate(Project.objects.all()):
+            # Fill the list
             assignment_infos_project.append(['-', False])
-            # seach assignment for project, employee and selected month
+            # Set new values if assignment exists
             for assignment_per_month in AssignmentPerMonth.objects.all():
                 if employee.id == assignment_per_month.employee.id and project.id == assignment_per_month.task.id and month == assignment_per_month.month:
                     assignment_infos_project[counter] = [int(assignment_per_month.percentage * 100),
                                                          assignment_per_month.responsibility]
-        # append it to the row for employee
+        # append to row for current employee
         employee_title.append(assignment_infos_project)
-        # append row to to the matrix for employee_task
 
-        # GET A LIST WITH '-' FOR EVERY POSITION
+        # CHAIR POSITION
         assignment_infos_position = []
         for counter, position in enumerate(Position.objects.all()):
+            # Fill the list
             assignment_infos_position.append(['-', False])
-            # search assignments for postion, employee and selected month
+            # Set new values if assignment exists
             for assignment_per_month in AssignmentPerMonth.objects.all():
                 if employee.id == assignment_per_month.employee.id and position.id == assignment_per_month.task.id and month == assignment_per_month.month:
                     assignment_infos_position[counter] = [int(assignment_per_month.percentage * 100),
                                                           assignment_per_month.responsibility]
-        # append it to the row for employee
+        # append to row for current employee
         employee_title.append(assignment_infos_position)
 
-        # GET A LIST WITH '-' FOR EVERY CHAIR
+        # CHAIR TASK
         assignment_infos_chair = []
         for counter, chair in enumerate(Chair.objects.all()):
+            # Fill the list
             assignment_infos_chair.append(['-', False])
-            # search assignments for chair, employee and selected month
+            # Set new values if assignment exists
             for assignment_per_month in AssignmentPerMonth.objects.all():
                 if employee.id == assignment_per_month.employee.id and chair.id == assignment_per_month.task.id and month == assignment_per_month.month:
                     assignment_infos_chair[counter] = [int(assignment_per_month.percentage * 100),
                                                        assignment_per_month.responsibility]
-        # append it to the row for employee
+        # append to row for current employee
         employee_title.append(assignment_infos_chair)
-
+        # append row to matrix
         employee_rows.append(employee_title)
-    print("employee_rows:, ", employee_rows)
+    # print("employee_rows:, ", employee_rows)
 
-    # get all percentages sums for all tasks
+    # Create a list for each task (projects, chair positions, chair tasks)
+    # that contains information about the summed up assignment's percentages and the available ressources
     task_sums = []
     for project in Project.objects.all():
         sum = 0
@@ -199,11 +260,11 @@ def dashboard(request, id):
         for assignment_per_month in AssignmentPerMonth.objects.all():
             if chair.id == assignment_per_month.task.id and month == assignment_per_month.month:
                 sum = sum + assignment_per_month.percentage
-        task_sums.append([int(sum + 100), int(chair.requirement * 100)])
+        task_sums.append([int(sum * 100), int(chair.requirement * 100)])
+    # print("task_sums: ", task_sums)
 
-    # print("task:sum: ", task_sums)
-
-    # GET INFORMARTION FOR ALL PROJECTS
+    # GET INFORMARTION FOR ALL TASKS (Projects, Chair Positions, Chair Tasks)
+    # (used in the table header)
     task_infos = []
     for project in Project.objects.all():
         sum = 0
@@ -212,10 +273,7 @@ def dashboard(request, id):
                 sum = sum + assignment_per_month.percentage
         task_workload = sum / project.ressources
         task_infos.append([project, int(sum * 100), int(project.ressources * 100), round(task_workload, 2)])
-
     # print("projects: ", task_infos)
-
-    # GET INFORMARTION FOR ALL POSITIONS
     for position in Position.objects.all():
         sum = 0
         for assignment_per_month in AssignmentPerMonth.objects.all():
@@ -223,10 +281,7 @@ def dashboard(request, id):
                 sum = sum + assignment_per_month.percentage
         task_workload = sum / position.ressources
         task_infos.append([position, int(sum * 100), int(position.ressources * 100), round(task_workload, 2)])
-
     # print("postions: ", task_infos)
-
-    # GET INFORMATION ABOUT ALL CHAIRS
     for chair in Chair.objects.all():
         sum = 0
         for assignment_per_month in AssignmentPerMonth.objects.all():
@@ -234,53 +289,11 @@ def dashboard(request, id):
                 sum = sum + assignment_per_month.percentage
         chair_workload = sum / chair.requirement
         task_infos.append([chair, int(sum * 100), int(chair.requirement * 100), round(chair_workload, 2)])
-
     # print("chairs:,", task_infos)
 
-    date = timezone.now()
-    current_year, current_month, _ = str(date).split('-')
-    current_month_name = month_dict[str(int(current_month))]
-    today = Month.objects.get(month=current_month_name, year=current_year)
-    try:
-        previous_month = Month.objects.get(id=id - 1)
-    except Exception:
-        previous_month = Month.objects.get(id=id)
-    try:
-        next_month = Month.objects.get(id=id + 1)
-    except Exception:
-        next_month = Month.objects.get(id=id)
-
-    # Warnings and recommendations
-    projects = Project.objects.all()
-    assignments = Assignment.objects.all()
-    employees = Employee.objects.all()
-    project_infos = []
-    employee_infos = []
-    for project in projects:
-        sum = 0
-        ressources = project.ressources
-        title = project.title
-        for assignment in assignments:
-            if assignment.task.id == project.id:
-                sum += assignment.percentage
-        diff = int(round((sum - ressources), 2) * 100)
-
-        project_infos.append((sum, ressources, title, diff))
-
-        # Employees information
-        for employee in employees:
-            employee_sum = 0
-            for task in tasks:
-                for assignment in assignments:
-                    if assignment.task.id == task.id and assignment.employee.id == employee.id:
-                        employee_sum += assignment.percentage
-            overload = int(round((employee_sum - employee.capacity), 2) * 100)
-            employee_infos.append((employee, employee_sum, employee.capacity, overload))
     context = {
         'tasks': tasks,
         'task_infos': task_infos,
-        'project_infos': project_infos,
-        'employee_infos': employee_infos,
         'employee_rows': employee_rows,
         'task_sums': task_sums,
         'month': month,
@@ -293,6 +306,7 @@ def dashboard(request, id):
 
 # EMPLOYEE/TASK WORKLOAD IN SPECIFIC MONTH
 def employee_in_months_no_id(request, emp_id):
+    # Redirecting to current month if no month was submitted
     date = timezone.now()
     current_year, current_month, _ = str(date).split('-')
     month_dict = {
@@ -315,50 +329,39 @@ def employee_in_months_no_id(request, emp_id):
 
 
 def employee_in_months(request, emp_id, month_id):
-    month_dict = {
-        '1': 'January',
-        '2': 'February',
-        '3': 'March',
-        '4': 'April',
-        '5': 'May',
-        '6': 'June',
-        '7': 'July',
-        '8': 'August',
-        '9': 'September',
-        '10': 'October',
-        '11': 'November',
-        '12': 'December',
-    }
+    # Frontend month selector
     if request.method == "POST":
+        month_dict = {
+            '1': 'January',
+            '2': 'February',
+            '3': 'March',
+            '4': 'April',
+            '5': 'May',
+            '6': 'June',
+            '7': 'July',
+            '8': 'August',
+            '9': 'September',
+            '10': 'October',
+            '11': 'November',
+            '12': 'December',
+        }
+        # Get the chosen month
         start = request.POST.get('start_month')
+        # Try to extract month and year of selected date
         try:
             start_year, start_month = str(start).split('-')
+        # Redirect to current month if no date was selected
         except ValueError:
             return redirect('/employee_in_months/{}/{}'.format(emp_id, month_id))
+        # Check if selected month exists
         for month_obj in Month.objects.all():
+            # Redirect to selected month if yes
             if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
                 month_id = month_obj.id
                 return redirect('/employee_in_months/{}/{}'.format(emp_id, month_id))
+        # Redirect to current month otherwise
         return redirect('/employee_in_months/{}/{}'.format(emp_id, month_id))
-
-    # data for one employee
-    employee = Employee.objects.get(id=emp_id)
-    tasks_in_months = []
-
-    for task in Task.objects.all():
-        task_info = [task.title]
-        assignments = []
-        append = False
-        for counter, month in enumerate(Month.objects.all()[month_id - 1:month_id + 11]):
-            assignments.append('-')
-            for assignment_per_months in AssignmentPerMonth.objects.all():
-                if task.id == assignment_per_months.task.id and employee.id == assignment_per_months.employee.id and assignment_per_months.month == month:
-                    assignments[counter] = int(round(assignment_per_months.percentage, 2) * 100)
-                    append = True
-        if append:
-            task_info.append(assignments)
-            tasks_in_months.append(task_info)
-
+    # Get previous and following/next month information for frontend date switcher
     month_dict = {
         '1': 'January',
         '2': 'February',
@@ -380,14 +383,38 @@ def employee_in_months(request, emp_id, month_id):
     today = Month.objects.get(month=current_month_name, year=current_year)
     try:
         previous_month = Month.objects.get(id=month_id - 1)
+    # redirect to last selected month if previous month does not exist
     except Exception:
         previous_month = Month.objects.get(id=month_id)
     try:
         next_month = Month.objects.get(id=month_id + 1)
+    # redirect to last selected month if following/next month does not exist
     except Exception:
         next_month = Month.objects.get(id=month_id)
 
-    print("list: ", tasks_in_months)
+    # Collect assignment data for selected employee
+    employee = Employee.objects.get(id=emp_id)
+    # Table body matrix
+    tasks_in_months = []
+    for task in Task.objects.all():
+        # Task title as first element of row
+        task_info = [task.title]
+        # Percentages in each month
+        assignments_percentages = []
+        # Will be set true, if at least one assignment in the following 12 months exists
+        append = False
+        # Loop through the next 12 months starting at selected date
+        for idx, month in enumerate(Month.objects.all()[month_id - 1:month_id + 11]):
+            # Fill the list
+            assignments_percentages.append('-')
+            for assignment_per_months in AssignmentPerMonth.objects.all():
+                if task.id == assignment_per_months.task.id and employee.id == assignment_per_months.employee.id and assignment_per_months.month == month:
+                    assignments_percentages[idx] = int(round(assignment_per_months.percentage, 2) * 100)
+                    append = True
+        if append:
+            task_info.append(assignments_percentages)
+            tasks_in_months.append(task_info)
+    # print("list: ", tasks_in_months)
 
     context = {
         'employee': employee,
@@ -402,6 +429,7 @@ def employee_in_months(request, emp_id, month_id):
 
 
 def task_in_months_no_id(request, tsk_id):
+    # Redirecting to current month if no month was submitted
     date = timezone.now()
     current_year, current_month, _ = str(date).split('-')
     month_dict = {
@@ -439,47 +467,23 @@ def task_in_months(request, tsk_id, month_id):
         '12': 'December',
     }
     if request.method == "POST":
+        # Get the chosen month
         start = request.POST.get('start_month')
+        # Try to extract month and year of selected date
         try:
             start_year, start_month = str(start).split('-')
+        # Redirect to current month if no date was selected
         except ValueError:
             return redirect('/task_in_months/{}/{}'.format(tsk_id, month_id))
+        # Check if selected month exists
         for month_obj in Month.objects.all():
+            # Redirect to selected month if yes
             if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
                 month_id = month_obj.id
                 return redirect('/task_in_months/{}/{}'.format(tsk_id, month_id))
+        # Redirect to current month otherwise
         return redirect('/task_in_months/{}/{}'.format(tsk_id, month_id))
-
-    # data for one employee
-    task = Task.objects.get(id=tsk_id)
-    emps_in_months = []
-
-    for employee in Employee.objects.all():
-        employee_info = [employee]
-        assignments = []
-        append = False
-        for counter, month in enumerate(Month.objects.all()[month_id - 1: month_id + 11]):
-            assignments.append('-')
-            for assignment_per_months in AssignmentPerMonth.objects.all():
-                if employee.id == assignment_per_months.employee.id and task.id == assignment_per_months.task.id and assignment_per_months.month == month:
-                    assignments[counter] = int(round(assignment_per_months.percentage, 2) * 100)
-                    append = True
-        if append:
-            employee_info.append(assignments)
-            emps_in_months.append(employee_info)
-    """for employee in Employee.objects.all():
-        employee_info = [employee]
-        assignments = []
-        # iterate through all months
-        for counter, month in enumerate(Month.objects.all()):
-            assignments.append('-')
-            for assignment_per_months in AssignmentPerMonth.objects.all():  # set assignment_percentages to right month
-                if employee.id == assignment_per_months.employee.id and task.id == assignment_per_months.task.id and month == assignment_per_months.month:
-                    assignments[counter] = int(round(assignment_per_months.percentage, 2) * 100)
-        employee_info.append(assignments[month_id - 1:month_id + 11])
-        emps_in_months.append(employee_info)
-    months = months[month_id - 1:month_id + 11]"""
-
+    # Get previous and following/next month information for frontend date switcher
     month_dict = {
         '1': 'January',
         '2': 'February',
@@ -501,12 +505,37 @@ def task_in_months(request, tsk_id, month_id):
     today = Month.objects.get(month=current_month_name, year=current_year)
     try:
         previous_month = Month.objects.get(id=month_id - 1)
+    # redirect to last selected month if previous month does not exist
     except Exception:
         previous_month = Month.objects.get(id=month_id)
     try:
         next_month = Month.objects.get(id=month_id + 1)
+    # redirect to last selected month if following/next month does not exist
     except Exception:
         next_month = Month.objects.get(id=month_id)
+
+    # Get selected task object
+    task = Task.objects.get(id=tsk_id)
+    # Collect data for table body
+    emps_in_months = []
+    for employee in Employee.objects.all():
+        # Take employee as first value
+        employee_info = [employee]
+        # List with percentages of each Employee assigned to this task
+        assignments_percentage = []
+        # Will later be set to true if any assignment exists in the next 12 months starting at selected date
+        append = False
+        for counter, month in enumerate(Month.objects.all()[month_id - 1: month_id + 11]):
+            # Fill the list
+            assignments_percentage.append('-')
+            # Search for assignments
+            for assignment_per_months in AssignmentPerMonth.objects.all():
+                if employee.id == assignment_per_months.employee.id and task.id == assignment_per_months.task.id and assignment_per_months.month == month:
+                    assignments_percentage[counter] = int(round(assignment_per_months.percentage, 2) * 100)
+                    append = True
+        if append:
+            employee_info.append(assignments_percentage)
+            emps_in_months.append(employee_info)
 
     context = {
         'task': task,
@@ -522,6 +551,7 @@ def task_in_months(request, tsk_id, month_id):
 
 # TIMESHEETS
 def employee_time_no_id(request):
+    # Redirecting to current month if no month was submitted
     date = timezone.now()
     current_year, current_month, _ = str(date).split('-')
     month_dict = {
@@ -548,7 +578,6 @@ def employee_time(request, id):
     assignments_per_month = AssignmentPerMonth.objects.all()
     months_sliced = Month.objects.all()[(id - 1):(id + 11)]
     assignments_sums = []
-
     month_dict = {
         '1': 'January',
         '2': 'February',
@@ -563,40 +592,43 @@ def employee_time(request, id):
         '11': 'November',
         '12': 'December',
     }
+    # Frontend month selector
     if request.method == "POST":
+        # Get selected month
         start = request.POST.get('start_month')
         try:
             start_year, start_month = str(start).split('-')
+        # Reload page of no month was selected
         except ValueError:
             return redirect('/employee_time/{}'.format(id))
+        # Redirect to newly set month
         for month_obj in Month.objects.all():
             if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
                 month_id = month_obj.id
                 return redirect('/employee_time/{}'.format(month_id))
+        # Reload page if month does not exist
         return redirect('/employee_time/{}'.format(id))
 
-    # create list of lists with task sums for employees
+    # Create matrix with summed up percentages for each month and selected employee
     for employee in Employee.objects.all():
         tasks_sum = []
+        # Will late be set to True if any assignment exists in selected timeframe
         append = False
-        # loop through months
         for month in months_sliced:
             sum = 0
-            # if current month and employee in assignments are right sum the percentages
             for assignment_per_month in assignments_per_month:
                 if assignment_per_month.employee == employee and assignment_per_month.month == month:
                     sum += assignment_per_month.percentage
                     append = True
             # append the current sum value to list
             tasks_sum.append(int(round(sum, 2) * 100))
-            print("tasks: ", tasks_sum)
-        # Slice list to only have 12 entries
-        # tasks_sum = tasks_sum[(id - 1):(id + 11)]
-        # append list to other lists
+
+        # append row to matrix if not empty
         if append:
             assignments_sums.append(tasks_sum)
             employees.append(employee)
 
+    # Get previous and following/next month for frontend month switcher
     date = timezone.now()
     current_year, current_month, _ = str(date).split('-')
     current_month_name = month_dict[str(int(current_month))]
@@ -604,6 +636,7 @@ def employee_time(request, id):
     previous_month = Month.objects.get(id=id - 1)
     next_month = Month.objects.get(id=id + 1)
     month = Month.objects.get(id=id)
+
     context = {
         'months': months_sliced,
         'assignments': assignments_sums,
@@ -617,6 +650,7 @@ def employee_time(request, id):
 
 
 def task_time_no_id(request):
+    # Redirecting to current month if no month was submitted
     date = timezone.now()
     current_year, current_month, _ = str(date).split('-')
     month_dict = {
@@ -643,7 +677,6 @@ def task_time(request, id):
     assignments_per_month = AssignmentPerMonth.objects.all()
     months_sliced = Month.objects.all()[(id - 1):(id + 11)]
     assignment_sums = []
-
     month_dict = {
         '1': 'January',
         '2': 'February',
@@ -658,20 +691,27 @@ def task_time(request, id):
         '11': 'November',
         '12': 'December',
     }
+    # Frontend month selector
     if request.method == "POST":
+        # Get selected month
         start = request.POST.get('start_month')
         try:
             start_year, start_month = str(start).split('-')
+        # Reload page of no month was selected
         except ValueError:
             return redirect('/task_time/{}'.format(id))
+        # Redirect to newly set month
         for month_obj in Month.objects.all():
             if month_obj.month == month_dict[str(int(start_month))] and month_obj.year == start_year:
                 month_id = month_obj.id
                 return redirect('/task_time/{}'.format(month_id))
+        # Reload page if month does not exist
         return redirect('/task_time/{}'.format(id))
 
+    # Create matrix with summed up percentages for each month and selected task
     for task in Task.objects.all():
         employees_sum = []
+        # Will later be set to True if any assignment exists in selected timeframe
         append = False
         for month in months_sliced:
             sum = 0
@@ -680,11 +720,12 @@ def task_time(request, id):
                     sum += int(round(assignment_per_month.percentage, 2) * 100)
                     append = True
             employees_sum.append(sum)
-
+        # append row to matrix if not empty
         if append:
             assignment_sums.append(employees_sum)
             tasks.append(task)
 
+    # Get previous and following/next month for frontend month switcher
     date = timezone.now()
     current_year, current_month, _ = str(date).split('-')
     current_month_name = month_dict[str(int(current_month))]
@@ -692,6 +733,7 @@ def task_time(request, id):
     previous_month = Month.objects.get(id=id - 1)
     next_month = Month.objects.get(id=id + 1)
     month = Month.objects.get(id=id)
+
     context = {
         'months': months_sliced,
         'assignments': assignment_sums,
@@ -798,17 +840,16 @@ def add_new_chair(request):
 
 
 def add_new_ass(request):
-    months = Month.objects.all()
     if request.method == "POST":
         form = AssignmentForm(request.POST)
         if form.is_valid():
             emp = Employee.objects.get(id=form.data['employee'])
-            tsk = Task.objects.get(id=form.data['task'])
             date_format = "%Y-%m-%d"
+            # RESTRICTION: Employees contract shall not expire before assignment ends
             if datetime.date(datetime.strptime(form.data['end'], date_format)) > emp.expiration_date:
                 messages.error(request, "The Employees contract ends before the assignment ends")
                 return redirect('/add_new_ass')
-            # Only check this constraint for projects
+            # RESTRICTION: Project shall not end before the assignment
             try:
                 project = Project.objects.get(id=form.data['task'])
                 if datetime.date(datetime.strptime(form.data['end'], date_format)) > project.end:
@@ -816,12 +857,13 @@ def add_new_ass(request):
                     return redirect('/add_new_ass')
             except Project.DoesNotExist:
                 print('Task is not a project')
-
+            # RESTRICTION: Assignments end date must always be later than assignment start date
             if datetime.date(datetime.strptime(form.data['start'], date_format)) > \
                     datetime.date(datetime.strptime(form.data['end'], date_format)):
                 messages.error(request, "The Assignment ends before it even started")
                 return redirect('/add_new_ass')
-            # CHECK IF POSITION ISN'T OVERBOOKED
+
+            # RESTRICTION: Chair Position and Chair Task shall not use more ressources than available
             # Get id's of all positions
             positions = Position.objects.all()
             position_ids = []
@@ -830,7 +872,7 @@ def add_new_ass(request):
             # check if selected id is present in position_ids list
             if int(form.data['task']) in position_ids:
                 sum = 0
-                # sum all percentages for this position
+                # sum all assignment's percentages for this position
                 for assignment in Assignment.objects.all():
                     if assignment.task.id == int(form.data['task']):
                         sum = sum + assignment.percentage
@@ -857,6 +899,7 @@ def add_new_ass(request):
                         id=int(form.data['task'])).title + " would be overbooked.")
                     return redirect('/add_new_ass')
 
+            # CREATE ASSIGNMENTPERMONTH OBJECTS
             # Get Information about the dates and calculate the duration
             emp = Employee.objects.get(id=form.data['employee'])
             task = Task.objects.get(id=form.data['task'])
@@ -882,26 +925,39 @@ def add_new_ass(request):
             if year_delta >= 0:
                 duration += year_delta * 12 + month_delta
             # Use information to initialize AssignmentPerMonth Objects
-            # as long as duration of Assignment is greater than zero
+            # as long as duration of Assignment is greater than or equal to zero
             first = True
             while duration >= 0:
                 start_month = int(start_month)
                 start_year = int(start_year)
                 month_name = month_dict[str(start_month)]
                 month_obj = Month.objects.get(month=month_name, year=start_year)
-                # Create AssignmentPerMonth Object
+
                 responsibility = form.data['responsibility']
                 if responsibility == 'true':
                     responsibility = True
                 else:
                     responsibility = False
-
                 percentage = form.data['percentage']
-                # The assignments percentage in the first and last month further depends on the day
+                # The first and last Months percentage needs to regard the day
+                month_days = {
+                    1: 31,
+                    2: 28,
+                    3: 31,
+                    4: 30,
+                    5: 31,
+                    6: 30,
+                    7: 31,
+                    8: 31,
+                    9: 30,
+                    10: 31,
+                    11: 30,
+                    12: 31
+                }
                 if first:
-                    percentage = float(percentage) * ((31 - float(start_day)) / 30.0)
+                    percentage = float(percentage) * ((month_days[int(start_month)]+1 - float(start_day)) / month_days[int(start_month)])
                 if duration == 0:
-                    percentage = float(percentage) * (float(end_day) / 30.0)
+                    percentage = float(percentage) * (float(end_day) / month_days[int(start_month)])
 
                 assignment_per_month = AssignmentPerMonth(employee=emp, task=task, month=month_obj, duration=duration,
                                                           percentage=percentage,
@@ -1039,6 +1095,7 @@ def update_chair(request, id):
 
 def update_ass(request, id):
     assignment = Assignment.objects.get(id=id)
+    # Collect old object data
     percentage_old = assignment.percentage
     responsibility_old = assignment.responsibility
     start_old = assignment.start_formatted
@@ -1086,15 +1143,17 @@ def update_ass(request, id):
         # CREATE A NEW ASSIGNMENT WITH OLD VALUES BEFORE AND AFTER THE NEWLY SET TIMEFRAME
         # start_old -> start    and    end -> end_old
         # Before: start_old -> start
-        ass_before = Assignment(employee=emp, task=task, start=start_old, end=start,
-                                percentage=percentage_old, responsibility=responsibility_old,
-                                comment=comment_old)
-        ass_before.save()
+        if start_old != start:
+            ass_before = Assignment(employee=emp, task=task, start=start_old, end=start,
+                                    percentage=percentage_old, responsibility=responsibility_old,
+                                    comment=comment_old)
+            ass_before.save()
         # After: end -> end_old
-        ass_after = Assignment(employee=emp, task=task, start=end, end=end_old,
-                               percentage=percentage_old, responsibility=responsibility_old,
-                               comment=comment_old)
-        ass_after.save()
+        if end != end_old:
+            ass_after = Assignment(employee=emp, task=task, start=end, end=end_old,
+                                   percentage=percentage_old, responsibility=responsibility_old,
+                                   comment=comment_old)
+            ass_after.save()
 
         # UPDATE ASSIGNMENTPERMONTHS WITHIN THE NEW TIMEFRAME
         # get all the needed information about the dates
@@ -1135,11 +1194,26 @@ def update_ass(request, id):
             ass = AssignmentPerMonth.objects.get(employee=emp, task=task, month=month_obj)
             ass.percentage = float(percentage)
             # The first and last Months percentage needs to regard the day
+            # Count of days in a month
+            month_days = {
+                1: 31,
+                2: 28,
+                3: 31,
+                4: 30,
+                5: 31,
+                6: 30,
+                7: 31,
+                8: 31,
+                9: 30,
+                10: 31,
+                11: 30,
+                12: 31
+            }
             if first:
-                ass.percentage = float(percentage) * ((31.0 - float(start_day)) / 30.0)
+                percentage = float(percentage) * (
+                            (month_days[int(start_month)] + 1 - float(start_day)) / month_days[int(start_month)])
             if duration == 0:
-                ass.percentage = float(percentage) * (float(end_day) / 30.0)
-
+                percentage = float(percentage) * (float(end_day) / month_days[int(start_month)])
             ass.responsibility = responsibility
             ass.save()
 
@@ -1187,7 +1261,6 @@ def delete_chair(request, id):
 
 def delete_ass(request, id):
     assignment = Assignment.objects.get(id=id)
-
     month_dict = {
         '1': 'January',
         '2': 'February',
@@ -1206,17 +1279,26 @@ def delete_ass(request, id):
     end = assignment.end
     start_year, start_month, _ = str(start).split('-')
     end_year, end_month, _ = str(end).split('-')
+
+    # RESTRICTION: USER SHALL NOT BE ABLE TO DELETE PAST ASSIGNMENTS
+    end_date = datetime.strptime(str(end), format).date()
+    today = datetime.today().date()
+    if end_date < today:
+        messages.error(request, "The Assignment already ended and will be kept to be reviewd.")
+        return redirect('/data')
+
+    # Calculate Assigments duration
     year_delta = int(end_year) - int(start_year)
     month_delta = int(end_month) - int(start_month)
     duration = 0
     if year_delta >= 0:
         duration += year_delta * 12 + month_delta
-
-    while duration > 0:
+    # Delete all AssignmentPerMonth Objects belonging to Assignment
+    while duration >= 0:
         start_month = int(start_month)
         month_name = month_dict[str(start_month)]
         month_obj = Month.objects.get(month=month_name, year=start_year)
-        # Create AssignmentPerMonth Object
+        # Delete AssignmentPerMonth Object
         assignment_per_month = AssignmentPerMonth.objects.get(employee=assignment.employee, task=assignment.task,
                                                               month=month_obj)
         assignment_per_month.delete()
@@ -1228,6 +1310,6 @@ def delete_ass(request, id):
             start_month = 1
             start_year += 1
         duration -= 1
-
+    # Delete Assignment after all belonging AssignmentPerMonths Objects have been deleted
     assignment.delete()
     return redirect('/data')

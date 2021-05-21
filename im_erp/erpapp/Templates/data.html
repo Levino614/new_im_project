@@ -302,9 +302,12 @@
         </div>
     </div>
 </div>
+<!-- Spacing -->
+<div class="col-1">
+</div>
 <!-- Sidebar -->
 <div class="col-3">
-    <h4>Warning(s):</h4>
+    <h4>Warning(s) for {{ month_object.short_name }}:</h4>
     {% if warnings_length > 0 %}
         {% for warning in warnings %}
         <div class="alert alert-danger" role="alert">
