@@ -844,6 +844,7 @@ def add_new_ass(request):
         form = AssignmentForm(request.POST)
         if form.is_valid():
             emp = Employee.objects.get(id=form.data['employee'])
+            task = Task.objects.get(id=form.data['task'])
             date_format = "%Y-%m-%d"
             # RESTRICTION: Employees contract shall not expire before assignment ends
             if datetime.date(datetime.strptime(form.data['end'], date_format)) > emp.expiration_date:
@@ -899,10 +900,19 @@ def add_new_ass(request):
                         id=int(form.data['task'])).title + " would be overbooked.")
                     return redirect('/add_new_ass')
 
+            # RESTRICTION: Assignments shall not overlap
+            assignments = Assignment.objects.filter(employee=emp, task=task)
+            for ass1 in assignments:
+                ass1_start = ass1.start
+                ass1_end = ass1.end
+                ass2_start = datetime.strptime(form.data['start'], date_format).date()
+                ass2_end = datetime.strptime(form.data['end'], date_format).date()
+                if (ass2_start <= ass1_end <= ass2_end) or (ass2_start <= ass1_start <= ass2_end) or (ass2_start <= ass1_start and ass2_end >= ass1_end) or (ass1_start <= ass2_start and ass1_end >= ass2_end):
+                    messages.error(request, "Assignment would overlap with other Assignment(s).")
+                    return redirect('/add_new_ass')
+
             # CREATE ASSIGNMENTPERMONTH OBJECTS
             # Get Information about the dates and calculate the duration
-            emp = Employee.objects.get(id=form.data['employee'])
-            task = Task.objects.get(id=form.data['task'])
             month_dict = {
                 '1': 'January',
                 '2': 'February',
