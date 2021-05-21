@@ -2,13 +2,12 @@ from datetime import datetime
 
 from django.shortcuts import render, redirect
 from django.utils import timezone
-from erpapp.forms import EmployeeForm, ProjectForm, PositionForm, ChairForm, AssignmentForm, EditAssignmentForm, \
-    MonthForm
+from erpapp.forms import EmployeeForm, ProjectForm, PositionForm, ChairForm, AssignmentForm, EditAssignmentForm
 from django.contrib import messages
 from erpapp.models import Employee, Project, Position, Chair, Assignment, Task, Month, AssignmentPerMonth
 
 
-# DATA CRUD (CREATE/READ/UPDATE/DELETE)
+# CRUD DATA (CREATE/READ/UPDATE/DELETE)
 def data(request):
     employees = Employee.objects.all()
     projects = Project.objects.all()

@@ -4,12 +4,10 @@ from erpapp.models import Employee, Project, Position, Chair, Assignment, Month
 
 class EmployeeForm(forms.ModelForm):
     class Meta:
-        type_choices = [
-            ('UA', 'Undergraduate Assistant'),
-            ('RA', 'Research Assistant')
-        ]
+        # Takes all Employee Fields
         model = Employee
         fields = ['firstname', 'lastname', 'type', 'capacity', 'hiring_date', 'expiration_date']
+        # Define the html input types
         widgets = {'firstname': forms.TextInput(attrs={'class': 'form-control'}),
                    'lastname': forms.TextInput(attrs={'class': 'form-control'}),
                    'type': forms.Select(attrs={'class': 'form-control'}),
@@ -22,8 +20,10 @@ class EmployeeForm(forms.ModelForm):
 
 class ProjectForm(forms.ModelForm):
     class Meta:
+        # Takes all Project Fields
         model = Project
         fields = ['title', 'description', 'ressources', 'begin', 'end']
+        # Define the html input types
         widgets = {'title': forms.TextInput(attrs={'class': 'form-control'}),
                    'description': forms.TextInput(attrs={'class': 'form-control'}),
                    'ressources': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': 0.0}),
@@ -34,8 +34,10 @@ class ProjectForm(forms.ModelForm):
 
 class PositionForm(forms.ModelForm):
     class Meta:
+        # Takes all Chair Position Fields
         model = Position
         fields = ['title', 'description', 'ressources']
+        # Define the html input types
         widgets = {'title': forms.TextInput(attrs={'class': 'form-control'}),
                    'description': forms.TextInput(attrs={'class': 'form-control'}),
                    'ressources': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': 0.0}),
@@ -44,14 +46,10 @@ class PositionForm(forms.ModelForm):
 
 class ChairForm(forms.ModelForm):
     class Meta:
-        rotation_choices = [
-            ('Summer Term', 'Summer Term'),
-            ('Winter Term', 'Winter Term'),
-            ('Every Term', 'Every Term'),
-            ('Irregular', 'Irregular')
-        ]
+        # Takes all Chair Task Fields
         model = Chair
         fields = ['title', 'description', 'rotation', 'requirement']
+        # Define the html input types
         widgets = {'title': forms.TextInput(attrs={'class': 'form-control'}),
                    'description': forms.TextInput(attrs={'class': 'form-control'}),
                    'rotation': forms.Select(attrs={'class': 'form-control'}),
@@ -61,8 +59,10 @@ class ChairForm(forms.ModelForm):
 
 class AssignmentForm(forms.ModelForm):
     class Meta:
+        # Takes all Assignment Fields
         model = Assignment
         fields = ['employee', 'task', 'start', 'end', 'percentage', 'responsibility', 'comment']
+        # Define the html input types
         widgets = {'employee': forms.Select(attrs={'class': 'form-control'}),
                    'task': forms.Select(attrs={'class': 'form-control'}),
                    'start': forms.DateInput(attrs={'class': 'form-control'}),
@@ -74,20 +74,10 @@ class AssignmentForm(forms.ModelForm):
                    }
 
 
+# For editing an assignment
 class EditAssignmentForm(forms.ModelForm):
     class Meta:
+        # Takes all Assignment Fields except the employee and task
         model = Assignment
         exclude = ['employee', 'task']
 
-
-class MonthForm(forms.ModelForm):
-    class Meta:
-        type_choices = [
-            ('UA', 'Undergraduate Assistant'),
-            ('RA', 'Research Assistant')
-        ]
-        model = Month
-        fields = ['month', 'year']
-        widgets = {'month': forms.Select(attrs={'class': 'form-control'}),
-                   'year': forms.Select(attrs={'class': 'form-control'}),
-                   }
