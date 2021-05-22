@@ -1293,6 +1293,8 @@ def delete_ass(request, id):
     start = assignment.start
     end = assignment.end
     start_year, start_month, _ = str(start).split('-')
+    start_year = int(start_year)
+    start_month = int(start_month)
     end_year, end_month, _ = str(end).split('-')
 
     # RESTRICTION: USER SHALL NOT BE ABLE TO DELETE PAST ASSIGNMENTS
