@@ -52,7 +52,7 @@ def data(request):
             if assignment.task.id == project.id:
                 sum += assignment.percentage
         # By what amount the project is currently overbooked
-        diff = int(round((sum - ressources), 2) * 100)
+        diff = int((sum - ressources) * 100)
         project_infos.append((sum, ressources, title, diff))  # Append information to list
 
     # Collect Employees Information
@@ -66,7 +66,7 @@ def data(request):
                 if assignment.task.id == task.id and assignment.employee.id == employee.id:
                     employee_sum += assignment.percentage
         # By what amount the employee is currently overbooked
-        overload = int(round((employee_sum - employee.capacity), 2) * 100)
+        overload = int((employee_sum - employee.capacity) * 100)
         employee_infos.append((employee, employee_sum, employee.capacity, overload))  # Append information to list
 
     # Create a list of warning messages,
@@ -412,12 +412,13 @@ def employee_in_months(request, emp_id, month_id):
             assignments_percentages.append('-')
             for assignment_per_months in assignments_per_month_for_employee:
                 if task.id == assignment_per_months.task.id and assignment_per_months.month == month:
-                    assignments_percentages[idx] = int(round(assignment_per_months.percentage, 2) * 100)
+                    assignments_percentages[idx] = int(assignment_per_months.percentage * 100)
                     append = True
         if append:
             task_info.append(assignments_percentages)
             tasks_in_months.append(task_info)
     # print("list: ", tasks_in_months)
+
     context = {
         'employee': employee,
         'tasks_in_months': tasks_in_months,
@@ -535,7 +536,7 @@ def task_in_months(request, tsk_id, month_id):
             # Search for assignments
             for assignment_per_months in assignments_for_months_for_task:
                 if employee.id == assignment_per_months.employee.id and assignment_per_months.month == month:
-                    assignments_percentage[counter] = int(round(assignment_per_months.percentage, 2) * 100)
+                    assignments_percentage[counter] = int(assignment_per_months.percentage * 100)
                     append = True
         if append:
             employee_info.append(assignments_percentage)
@@ -625,7 +626,7 @@ def employee_time(request, id):
                     sum += assignment_per_month.percentage
                     append = True
             # append the current sum value to list
-            tasks_sum.append(int(round(sum, 2) * 100))
+            tasks_sum.append(int(sum * 100))
 
         # append row to matrix if not empty
         if append:
@@ -721,7 +722,7 @@ def task_time(request, id):
             sum = 0
             for assignment_per_month in assignments_per_month:
                 if assignment_per_month.task.id == task.id and assignment_per_month.month == month:
-                    sum += int(round(assignment_per_month.percentage, 2) * 100)
+                    sum += int(assignment_per_month.percentage * 100)
                     append = True
             employees_sum.append(sum)
         # append row to matrix if not empty
@@ -1295,7 +1296,8 @@ def delete_ass(request, id):
     end_year, end_month, _ = str(end).split('-')
 
     # RESTRICTION: USER SHALL NOT BE ABLE TO DELETE PAST ASSIGNMENTS
-    end_date = datetime.strptime(str(end), format).date()
+    date_format = "%Y-%m-%d"
+    end_date = datetime.strptime(str(end), date_format).date()
     today = datetime.today().date()
     if end_date < today:
         messages.error(request, "The Assignment already ended and will be kept to be reviewd.")
