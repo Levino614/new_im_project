@@ -2,6 +2,7 @@ from datetime import datetime
 
 from django.shortcuts import render, redirect
 from django.utils import timezone
+from django.utils.datastructures import MultiValueDictKeyError
 from erpapp.forms import EmployeeForm, ProjectForm, PositionForm, ChairForm, AssignmentForm, EditAssignmentForm
 from django.contrib import messages
 from erpapp.models import Employee, Project, Position, Chair, Assignment, Task, Month, AssignmentPerMonth
@@ -1142,10 +1143,12 @@ def update_ass(request, id):
         emp = Employee.objects.filter(id=assignment.employee.id).first()
         task = Task.objects.filter(id=assignment.task.id).first()
         percentage = form.data['percentage']
-        print(form.data['responsibility'])
-        if form.data['responsibility'] == 'on':
-            responsibility = True
-        else:
+        try:
+            if form.data['responsibility'] == 'on':
+                responsibility = True
+            else:
+                responsibility = False
+        except MultiValueDictKeyError:
             responsibility = False
         comment = form.data['comment']
         start = form.data['start']
