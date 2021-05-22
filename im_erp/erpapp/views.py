@@ -847,6 +847,7 @@ def add_new_chair(request):
 def add_new_ass(request):
     if request.method == "POST":
         form = AssignmentForm(request.POST)
+        print(form.data['responsibility'])
         if form.is_valid():
             emp = Employee.objects.get(id=form.data['employee'])
             task = Task.objects.get(id=form.data['task'])
@@ -1141,9 +1142,10 @@ def update_ass(request, id):
         emp = Employee.objects.filter(id=assignment.employee.id).first()
         task = Task.objects.filter(id=assignment.task.id).first()
         percentage = form.data['percentage']
-        try:
-            responsibility = form.data['responsibility']
-        except Exception:
+        print(form.data['responsibility'])
+        if form.data['responsibility'] == 'on':
+            responsibility = True
+        else:
             responsibility = False
         comment = form.data['comment']
         start = form.data['start']
@@ -1230,6 +1232,7 @@ def update_ass(request, id):
             if duration == 0:
                 percentage = float(percentage) * (float(end_day) / month_days[int(start_month)])
             ass.responsibility = responsibility
+            ass.comment = comment
             ass.save()
 
             # Prepare following iteration
@@ -1317,9 +1320,12 @@ def delete_ass(request, id):
         month_name = month_dict[str(start_month)]
         month_obj = Month.objects.get(month=month_name, year=start_year)
         # Delete AssignmentPerMonth Object
-        assignment_per_month = AssignmentPerMonth.objects.get(employee=assignment.employee, task=assignment.task,
-                                                              month=month_obj)
-        assignment_per_month.delete()
+        try:
+            assignment_per_month = AssignmentPerMonth.objects.get(employee=assignment.employee, task=assignment.task,
+                                                                  month=month_obj)
+            assignment_per_month.delete()
+        except AssignmentPerMonth.DoesNotExist:
+            print('AssignmentPerMonth does not exist')
 
         # Increase the month and decrease the Assignments duration by one
         if start_month < 12:
